@@ -50,8 +50,8 @@ class BookModel(db.Model):
         return cls.query.filter_by(genre=genre).first()
 
     @classmethod
-    def find_by_bestseller(cls, bestseller):
-        return cls.query.filter_by(bestseller=bestseller).first()
+    def find_by_bestseller(cls):
+        return cls.query.filter_by(bestseller=1).all()
 
     def save_to_db(self):
         db.session.add(self)

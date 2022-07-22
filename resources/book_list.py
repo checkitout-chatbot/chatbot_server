@@ -5,24 +5,11 @@ from models.book_list import BookListModel
 
 class BookList(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('isbn',
-                        type=str,
-                        required=False,
-                        help="You have to input the ISBN!"
-                        )
-    parser.add_argument('username',
-                        type=str,
-                        required=True,
-                        help="You have to input the User ID!"
-                        )
-    parser.add_argument('review',
-                        type=str,
-                        required=False,
-                        )
-    parser.add_argument('rate',
-                        type=float,
-                        required=False,
-                        )
+    parser.add_argument('isbn', type=str)
+    parser.add_argument('username', type=str, required=True,
+                        help="You have to input the User ID!")
+    parser.add_argument('review', type=str)
+    parser.add_argument('rate', type=float)
 
     @jwt_required()
     def get(self, status):

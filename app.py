@@ -4,7 +4,7 @@ from flask_jwt import JWT
 
 from security import authenticate, identity
 from resources.user import UserRegister
-from resources.book import Book
+from resources.book import Book, Today
 from resources.book_list import BookList
 
 app = Flask(__name__)
@@ -23,6 +23,7 @@ def create_tables():
 jwt = JWT(app, authenticate, identity)  # /auth
 
 api.add_resource(Book, '/book/<string:isbn>')
+api.add_resource(Today, '/today/')
 api.add_resource(BookList, '/booklist/<string:status>')
 api.add_resource(UserRegister, '/register')
 
