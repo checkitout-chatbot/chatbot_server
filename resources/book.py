@@ -63,7 +63,3 @@ class Book(Resource):
 
         return {'message': '책을 삭제했습니다.'}
 
-
-class BookAll(Resource):
-    def get(self):
-        return {'books': list(map(lambda x: x.json(), BookModel.query.all()))}

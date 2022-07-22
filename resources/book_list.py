@@ -23,6 +23,7 @@ class BookList(Resource):
                         type=float,
                         required=False,
                         )
+
     @jwt_required()
     def get(self, status):
         data = BookList.parser.parse_args()
@@ -67,8 +68,3 @@ class BookList(Resource):
         book.save_to_db()
 
         return book.json()
-
-
-class BookListAll(Resource):
-    def get(self):
-        return {'books': list(map(lambda x: x.json(), BookListModel.query.all()))}

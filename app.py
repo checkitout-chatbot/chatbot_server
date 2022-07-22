@@ -4,8 +4,8 @@ from flask_jwt import JWT
 
 from security import authenticate, identity
 from resources.user import UserRegister
-from resources.book import Book, BookAll
-from resources.book_list import BookList, BookListAll
+from resources.book import Book
+from resources.book_list import BookList
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://chatbot:checkitOut-2022@chatbotdb.c3hrvk4wz2vi.ap-northeast-2.rds.amazonaws.com:3306/test_db'
@@ -23,9 +23,7 @@ def create_tables():
 jwt = JWT(app, authenticate, identity)  # /auth
 
 api.add_resource(Book, '/book/<string:isbn>')
-api.add_resource(BookAll, '/books')
 api.add_resource(BookList, '/booklist/<string:status>')
-api.add_resource(BookListAll, '/booklists')
 api.add_resource(UserRegister, '/register')
 
 if __name__ == '__main__':
