@@ -1,3 +1,4 @@
+from flask import request
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 import random
@@ -43,6 +44,8 @@ class Book(Resource):
 
 class Today(Resource):  # 오늘의 추천
     def post(self):
+        body = request.get_json()
+        print(body)
         # bestseller 목록 전체 가져와서 랜덤으로 한 권 뽑기
         books = BookModel.find_by_bestseller()
         randint = random.randint(0, len(books))
