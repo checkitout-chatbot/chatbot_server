@@ -253,3 +253,4 @@ cython_debug/
 
 .DS_Store
 *.swp
+*.doc2vec
