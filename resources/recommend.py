@@ -63,6 +63,7 @@ class Similar(Resource):  # 비슷한 책 추천
 
     def post(self):
         data = Similar.parser.parse_args()
+        print(data)
         try:
             # kakao 책 검색으로 제목입력하여 ISBN 추출
             input_title = data['action']['params']['title']
@@ -143,17 +144,12 @@ class Similar(Resource):  # 비슷한 책 추천
                         {
                             "simpleText": {
                                 "text": "죄송하지만 말씀하신 책을 찾을 수 없어요."
-
                             }
-
                         }
-
                     ]
-
                 }
             }
             print(e)
-
         return responseBody
 
 

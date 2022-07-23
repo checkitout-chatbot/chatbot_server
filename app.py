@@ -5,7 +5,7 @@ from flask_jwt import JWT
 from security import authenticate, identity
 from resources.user import UserRegister
 from resources.book import Book
-from resources.book_list import BookList
+from resources.book_list import BookList, Barcode
 from resources.recommend import Today, Similar, Sense, Social
 
 app = Flask(__name__)
@@ -33,9 +33,12 @@ api.add_resource(Similar, '/recommend/similar')
 api.add_resource(Sense, '/recommend/sense')
 api.add_resource(Social, '/recommend/social')
 
-# 유저가 담은 책 리스트 관리
-# 0: 읽고 싶은 책, 1: 읽는 중, 2: 읽은 책 | view, save, change(상태만 변경)
-api.add_resource(BookList, '/booklist/<string:status>/<string:work>')
+# 저장한 책 리스트 확인
+# 0: 읽고 싶은 책 1: 읽은 책
+api.add_resource(BookList, '/booklist/<string:status>')
+
+# 바코드로 책 저장
+api.add_resource(Barcode, '/booklist/<string:status>/barcode')
 
 if __name__ == '__main__':
     from db import db
