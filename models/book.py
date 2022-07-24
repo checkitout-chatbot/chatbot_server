@@ -10,9 +10,9 @@ class BookModel(db.Model):
     publisher = db.Column(db.String(80))
     summary = db.Column(db.String(255))
     img = db.Column(db.String(255))
-    genre = db.Column(db.String(80))
-    rate = db.Column(db.Float(precision=1))
-    bestseller = db.Column(db.Integer)
+    genre = db.Column(db.String(80), nullable=True)
+    rate = db.Column(db.Float(precision=1), nullable=True)
+    bestseller = db.Column(db.Integer, nullable=True)
 
     book_list = db.relationship('BookListModel', lazy='dynamic')
 

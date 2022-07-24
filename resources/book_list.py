@@ -1,8 +1,8 @@
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
 from models.book import BookModel
 from models.book_list import BookListModel
 from models.user import UserModel
+from resources.search import Searching
 
 
 class BookList(Resource):
@@ -42,7 +42,7 @@ class BookList(Resource):
                                     {
                                         "label": "마이페이지로 돌아가기",
                                         "action": "block",
-                                        "blockId": "62dc1254903c8b5a8005803f"
+                                        "blockId": "62c90931903c8b5a8004448c"
                                     }
                                 ]
                             }
@@ -58,6 +58,9 @@ class BookList(Resource):
                             "label": "바코드로 책 추가",
                             "action": "block",
                             "blockId": "62dc1254903c8b5a8005803f",
+                            "extra": {
+                                "user_id": user_id,
+                            }
                         },
                         {
                             "label": "책 추천 받기",
@@ -77,6 +80,7 @@ class BookList(Resource):
             outputs = responseBody['template']['outputs']
             items = outputs[0]['listCard']['items']
             # 보기
+            cnt = 0
             for book in books:
                 book_info = BookModel.find_by_isbn(book.json()['isbn']).json()
                 item['title'] = book_info['title']
@@ -85,6 +89,9 @@ class BookList(Resource):
                 item['description'] = description
                 item['imageUrl'] = book_info['img']
                 items.append(item.copy())
+                cnt += 1
+                if cnt == 5:
+                    break
         else:
             responseBody = {
                 "version": "2.0",
@@ -98,15 +105,23 @@ class BookList(Resource):
                     ],
                     "quickReplies": [
                         {
-                            "label": "뒤로가기",
+                            "label": "뒤로",
                             "action": "block",
-                            "blockId": "62dc1254903c8b5a8005803f"
+                            "blockId": "62c90931903c8b5a8004448c",
+                        },
+                        {
+                            "label": "바코드로 책 추가",
+                            "action": "block",
+                            "blockId": "62dc1254903c8b5a8005803f",
+                            "extra": {
+                                "user_id": user_id,
+                            }
                         },
                         {
                             "label": "책 추천 받기",
                             "action": "block",
-                            "blockId": "62dc1254903c8b5a8005803f"
-                        },
+                            "blockId": "62c7e7ade262a941bbdca4ea",
+                        }
                     ]
                 }
             }
@@ -118,16 +133,27 @@ class Barcode(Resource):
     parser.add_argument('action', type=dict, required=True)
 
     def post(self, status):
+        import re
         data = Barcode.parser.parse_args()
         print(data)
-        user_id = data['action']['id']
+        user_id = data['action']['clientExtra']['user_id']
         barcode = data['action']['params']['barcode']
-        barcode = barcode.replace('}', '').split(':')[1]
+        barcode = re.sub("[^0-9]", "", barcode)
         try:
-            book = BookModel.find_by_isbn(barcode).json()
-            check_booklist = BookListModel.find_by_book(barcode, user_id)
+            book = BookModel.find_by_isbn(barcode)
+            if book == None:
+                search = Searching()
+                book = search.isbn_book(barcode)
+                if len(book['authors']) > 1:
+                    authors = ", ".join(book['authors'])
+                else:
+                    authors = book['authors'][0]
+                book = BookModel(barcode, book['title'], authors, book['publisher'],
+                                 book['contents'], book['thumbnail'], None, None, None)
+                book.save_to_db()
 
             # 리스트에 등록된 책인지 확인
+            check_booklist = BookListModel.find_by_book(barcode, user_id)
             if check_booklist != None:
                 responseBody = {
                     "version": "2.0",
@@ -143,7 +169,7 @@ class Barcode(Resource):
                             {
                                 "label": "뒤로가기",
                                 "action": "block",
-                                "blockId": "62bef96a50b23b1e3a6e25b6"
+                                "blockId": "62c90931903c8b5a8004448c"
                             },
                             {
                                 "label": "책 추천 받기",
@@ -154,6 +180,8 @@ class Barcode(Resource):
                     }
                 }
             else:
+                book = book.json()
+                print(book)
                 description = (book['summary'][:50] + '...') if len(
                     book['summary']) > 50 else book['summary']
                 booklist = BookListModel(
@@ -177,6 +205,18 @@ class Barcode(Resource):
                                     "text": "책을 저장했습니다."
                                 }
                             }
+                        ],
+                        "quickReplies": [
+                            {
+                                "label": "뒤로가기",
+                                "action": "block",
+                                "blockId": "62c90931903c8b5a8004448c"
+                            },
+                            {
+                                "label": "책 추천 받기",
+                                "action": "block",
+                                "blockId": "62dc1254903c8b5a8005803f"
+                            },
                         ]
                     }
                 }
@@ -195,12 +235,12 @@ class Barcode(Resource):
                         {
                             "label": "뒤로가기",
                             "action": "block",
-                            "blockId": "62bef96a50b23b1e3a6e25b6"
+                            "blockId": "62c90931903c8b5a8004448c"
                         },
                         {
                             "label": "책 추천 받기",
                             "action": "block",
-                            "blockId": "62dc1254903c8b5a8005803f"
+                            "blockId": "62c7e7ade262a941bbdca4ea"
                         },
                     ]
                 }
