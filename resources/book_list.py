@@ -149,7 +149,7 @@ class Barcode(Resource):
                 else:
                     authors = book['authors'][0]
                 book = BookModel(barcode, book['title'], authors, book['publisher'],
-                                 book['contents'], book['thumbnail'], None, None, None)
+                                 book['contents'], book['thumbnail'], None, None, None, None)
                 book.save_to_db()
 
             # 리스트에 등록된 책인지 확인

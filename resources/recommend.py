@@ -2,7 +2,6 @@ import random
 from flask import request
 from flask_restful import Resource, reqparse
 from models.book import BookModel
-from gensim.models.doc2vec import Doc2Vec
 from resources.search import Searching
 
 
@@ -67,18 +66,16 @@ class Similar(Resource):  # 비슷한 책 추천
         try:
             # kakao 책 검색으로 제목입력하여 ISBN 추출
             input_title = data['action']['params']['title']
-            print(input_title)
             search = Searching()
             input_isbn = search.book(input_title)
-            #  input_isbn = '9788901149554'  # test
 
             # doc2vec 모델로 유사도 구한 후 비슷한 책 중 랜덤으로 3개 뽑기
-            model = Doc2Vec.load('./recommendation.doc2vec')
-            similar_doc = model.docvecs.most_similar(input_isbn)
+            book = BookModel.find_by_isbn(input_isbn).json()
+            similar_books = book['similarity'].split(",")
             rand_ints = random.sample(range(0, 9), 3)
-            book1 = BookModel.find_by_isbn(similar_doc[rand_ints[0]][0]).json()
-            book2 = BookModel.find_by_isbn(similar_doc[rand_ints[1]][0]).json()
-            book3 = BookModel.find_by_isbn(similar_doc[rand_ints[2]][0]).json()
+            book1 = BookModel.find_by_isbn(similar_books[rand_ints[0]]).json()
+            book2 = BookModel.find_by_isbn(similar_books[rand_ints[1]]).json()
+            book3 = BookModel.find_by_isbn(similar_books[rand_ints[2]]).json()
 
             responseBody = {
                 "version": "2.0",
