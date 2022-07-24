@@ -26,7 +26,7 @@ class BookList(Resource):
             print("id를 db에 저장했습니다.")
 
         # 읽고 싶은 책 응답형
-        if status == 0:
+        if status == '0':
             responseBody = {
                 "version": "2.0",
                 "template": {
