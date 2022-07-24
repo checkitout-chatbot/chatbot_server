@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.book_list import BookListModel
+import re
 
 # extra value 값으로 isbn을 가져와 읽고 싶은 책 저장
 
@@ -99,6 +100,8 @@ class SaveReview(Resource):
         isbn = data['action']['clientExtra']['isbn']
         user_id = data['userRequest']['user']['id']
         rate = data['action']['params']['rate']
+        rate = re.sub("[^0-9]", "", rate)
+        print(rate, type(rate))
         review = data['action']['params']['review']
         try:
             # 리스트에 등록된 책인지 확인
@@ -129,7 +132,7 @@ class SaveReview(Resource):
                     }
                 }
             else:
-                booklist = BookListModel(isbn, user_id, 1, review, rate)
+                booklist = BookListModel(isbn, user_id, 1, review, int(rate))
                 booklist.save_to_db()
                 responseBody = {
                     "version": "2.0",
