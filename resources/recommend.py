@@ -67,7 +67,7 @@ class Similar(Resource):  # 비슷한 책 추천
             # kakao 책 검색으로 제목입력하여 ISBN 추출
             input_title = data['action']['params']['title']
             search = Searching()
-            input_isbn = search.book(input_title)
+            input_isbn = search.get_isbn(input_title)
 
             # doc2vec 모델로 유사도 구한 후 비슷한 책 중 랜덤으로 3개 뽑기
             book = BookModel.find_by_isbn(input_isbn).json()
