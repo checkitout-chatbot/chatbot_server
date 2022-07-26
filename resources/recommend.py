@@ -13,7 +13,7 @@ class Today(Resource):  # 오늘의 추천
         books = BookModel.find_by_bestseller()
         randint = random.randint(0, len(books))
         book = books[randint].json()
-        # 책 설명 10자 이상 넘어가면 요약
+        # 책 설명 50자 이상 넘어가면 요약
         description = (
             book['summary'][:50] + '...') if len(book['summary']) > 50 else book['summary']
         responseBody = {
@@ -27,27 +27,29 @@ class Today(Resource):  # 오늘의 추천
                             "thumbnail": {
                                 "imageUrl": book['img']
                             },
-                            "profile": {
-                                "imageUrl": book['img'],
-                                "nickname": book['title']
-                            },
-                            "social": {
-                                "like": 1238,
-                                "comment": 8,
-                                "share": 780
-                            },
-                            "buttons": [
-                                {
-                                    "action": "message",
-                                    "label": "읽고 싶어요(저장)",
-                                    "messageText": "내가 읽고 싶은 책 목록에 저장했습니다(개발예정)"
-                                },
-                                {
-                                    "action":  "message",
-                                    "label": "읽은 책입니다(저장+평점)",
-                                    "messageText": "내가 읽은 책 목록에 저장하고 평점 남기기(개발예정)"
-                                }
-                            ]
+                        }
+                    }
+                ],
+                "quickReplies": [
+                    {
+                        "label": "뒤로가기",
+                        "action": "block",
+                        "blockId": "62dd372c28d63278024d6104"
+                    },
+                    {
+                        "label": "읽고 싶은 책으로 저장",
+                        "action": "block",
+                        "blockId": "62dd402d903c8b5a80058543",
+                        "extra": {
+                            "isbn": book['isbn'],
+                        }
+                    },
+                    {
+                        "label": "읽은 책으로 저장",
+                        "action": "block",
+                        "blockId": "62dd404bc7d05102c2ccffb4",
+                        "extra": {
+                            "isbn": book['isbn'],
                         }
                     }
                 ]
@@ -92,10 +94,9 @@ class Similar(Resource):  # 비슷한 책 추천
                                         "description": ((book1['summary'][:50] + '...') if len(book1['summary']) > 50 else book1['summary']),
                                         "imageUrl": book1['img'],
                                         "action": "block",
-                                        "blockId": "62654c249ac8ed78441532de",
+                                        "blockId": "62dd402d903c8b5a80058543",
                                         "extra": {
-                                            "key1": "value1",
-                                            "key2": "value2"
+                                            "isbn": book['isbn'],
                                         }
                                     },
                                     {
@@ -103,10 +104,9 @@ class Similar(Resource):  # 비슷한 책 추천
                                         "description": ((book2['summary'][:50] + '...') if len(book2['summary']) > 50 else book2['summary']),
                                         "imageUrl": book2['img'],
                                         "action": "block",
-                                        "blockId": "62654c249ac8ed78441532de",
+                                        "blockId": "62dd402d903c8b5a80058543",
                                         "extra": {
-                                            "key1": "value1",
-                                            "key2": "value2"
+                                            "isbn": book['isbn'],
                                         }
                                     },
                                     {
@@ -114,10 +114,9 @@ class Similar(Resource):  # 비슷한 책 추천
                                         "description": ((book3['summary'][:50] + '...') if len(book3['summary']) > 50 else book3['summary']),
                                         "imageUrl": book3['img'],
                                         "action": "block",
-                                        "blockId": "62654c249ac8ed78441532de",
+                                        "blockId": "62dd402d903c8b5a80058543",
                                         "extra": {
-                                            "key1": "value1",
-                                            "key2": "value2"
+                                            "isbn": book['isbn'],
                                         }
                                     },
                                 ],
@@ -129,11 +128,16 @@ class Similar(Resource):  # 비슷한 책 추천
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "simpleText": {
+                                "text": "위의 책 중 읽고 싶은 책이 있다면?\n책을 누르면 읽고 싶은 책으로 저장됩니다!"
+                            }
                         }
                     ]
                 }
             }
-        except Exception as e:
+        except Exception:
             responseBody = {
                 "version": "2.0",
                 "template": {
@@ -146,7 +150,6 @@ class Similar(Resource):  # 비슷한 책 추천
                     ]
                 }
             }
-            print(e)
         return responseBody
 
 
@@ -154,7 +157,6 @@ class Sense(Resource):  # 알잘딱깔센 추천
     parser = reqparse.RequestParser()
 
     def post(self):
-        body = request.get_json()
         responseBody = {
             "version": "2.0",
             "template": {
@@ -178,8 +180,6 @@ class Social(Resource):  # 소셜 추천
     parser = reqparse.RequestParser()
 
     def post(self):
-        body = request.get_json()
-        print(body)
         responseBody = {
             "version": "2.0",
             "template": {
