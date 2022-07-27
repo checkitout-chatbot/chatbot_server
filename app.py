@@ -19,7 +19,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_recycle": 250, "timeout": 600}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_recycle": 250}
 app.secret_key = 'jun'
 api = Api(app)
 
