@@ -7,8 +7,8 @@ test:
   stage: test
   image: python3:latest
   script:
-    - pip install -U pip
-    - pip install -r requirements.txt
+    - python3 -m pip install -U pip
+    - python3 -m pip install -r requirements.txt
 
 build:
   image: docker:latest
