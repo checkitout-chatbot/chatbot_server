@@ -1,18 +1,34 @@
 stages:
-  - build
   - test
+  - build
+  - deploy
 
-build-code-job:
+variables:
+  IMAGE_NAME: chchdelm3/it-ggi:latest
+
+test:
+  stage: test
+  image: python3:latest
+  script:
+    - pip install flask
+
+build:
   stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - echo "Check the ruby version, then build some Ruby project files:"
+    - docker container ls -a
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
+    - docker buildx create --name multiarch-builder --use
+    - docker buildx build --push --platform linux/arm64,linux/amd64,linux/arm/v7 --tag $IMAGE_NAME .
 
-test-code-job1:
-  stage: test
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - echo "If the files are built successfully, test some files with one command:"
-
-test-code-job2:
-  stage: test
-  script:
-    - echo "If the files are built successfully, test other files with a different command:"
+    - docker container rm -f it-ggi 
+    - docker run -d -p 5000:5000 --name it-ggi --restart always -e DATABASE_URL=$DATABASE_URL $IMAGE_NAME
+    - docker ps
