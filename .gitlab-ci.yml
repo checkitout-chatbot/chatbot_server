@@ -8,11 +8,8 @@ variables:
 
 test:
   stage: test
-  image: python3:latest
-  before_scirpt:
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
   script:
-    - pip install flask
+    - echo "execute test.py"
 
 build:
   stage: build
