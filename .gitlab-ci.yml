@@ -19,9 +19,9 @@ build:
   before_script:
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
   script:
-    - docker container ls -a
-    - docker buildx create --name multiarch-builder --use
-    - docker buildx build --push --platform linux/arm64,linux/amd64,linux/arm/v7 --tag $IMAGE_NAME .
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+    - docker images
 
 deploy:
   stage: deploy
