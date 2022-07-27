@@ -9,6 +9,8 @@ variables:
 test:
   stage: test
   image: python3:latest
+  before_scirpt:
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
   script:
     - pip install flask
 
@@ -17,9 +19,10 @@ build:
   image: docker:latest
   services:
     - docker:dind
+  before_scirpt:
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
   script:
     - docker container ls -a
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
     - docker buildx create --name multiarch-builder --use
     - docker buildx build --push --platform linux/arm64,linux/amd64,linux/arm/v7 --tag $IMAGE_NAME .
 
@@ -32,3 +35,5 @@ deploy:
     - docker container rm -f it-ggi 
     - docker run -d -p 5000:5000 --name it-ggi --restart always -e DATABASE_URL=$DATABASE_URL $IMAGE_NAME
     - docker ps
+  only:
+    - main
