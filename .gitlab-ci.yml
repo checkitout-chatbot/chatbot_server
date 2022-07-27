@@ -16,7 +16,7 @@ build:
   image: docker:latest
   services:
     - docker:dind
-  before_scirpt:
+  before_script:
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWD
   script:
     - docker container ls -a
