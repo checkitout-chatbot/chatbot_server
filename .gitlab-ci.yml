@@ -3,26 +3,39 @@ stages:
   - build
   - deploy
 
-variables:
-  IMAGE_NAME: chchdelm3/it-ggi
-
 test:
   stage: test
   image: python3:latest
   script:
+    - pip install -U pip
     - pip install -r requirements.txt
 
 build:
-  stage: package
   image: docker:latest
+  stage: build
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   services:
     - docker:dind
-  stage: build
   script:
-    - docker ps -a
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker buildx create --name multiarch-builder --use
     - docker buildx build --push \
       --platform linux/arm64,linux/amd64,linux/arm/v7 \
-      --tag $IMAGE_NAME .
+      --tag "$CI_REGISTRY_IMAGE${tag}" .
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
 
 deploy:
   stage: deploy
@@ -30,12 +43,11 @@ deploy:
   services:
     - docker:dind
   script:
-    - docker ps -a
     - docker container rm -f it-ggi
     - docker run -d -p 5000:5000 \
       --name it-ggi \
       --restart always \
-      -e DATABASE_URL=mysql+pymysql://chatbot:checkitOut-2022@chatbotdb.c3hrvk4wz2vi.ap-northeast-2.rds.amazonaws.com:3306/test_db \
+      -e DATABASE_URL=$DATABASE_URL \
       -v ./log:/app/log \
       $IMAGE_NAME
     - docker ps -a
