@@ -32,5 +32,3 @@ deploy:
     - docker container rm -f it-ggi 
     - docker run -d -p 5000:5000 --name it-ggi --restart always -e DATABASE_URL=$DATABASE_URL $IMAGE_NAME
     - docker ps
-  only:
-    - main

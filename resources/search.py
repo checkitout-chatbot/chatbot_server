@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from models.book import BookModel
+from resources.response import Response, BlockID
 import requests
 import json
 
@@ -36,6 +37,11 @@ class Barcode(Resource):
         print(data)
         barcode = data['action']['params']['barcode']
         barcode = re.sub("[^0-9]", "", barcode)
+
+        response = Response()
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+
         try:
             book = BookModel.find_by_isbn(barcode)
             # 가져온 ISBN의 책이 DB에 없는 경우 카카오 API로 검색하여 저장
@@ -52,72 +58,57 @@ class Barcode(Resource):
 
             # 책 데이터 카드형으로 출력
             book = book.json()
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                        {
-                            "basicCard": {
-                                "title": book['title'],
-                                "description": book['author'],
-                                "thumbnail": {
-                                    "imageUrl": book['img']
-                                },
-                                "buttons": [
-                                    {
-                                        "action": "message",
-                                                  "label": "책 소개 보기",
-                                                  "messageText": book['summary']
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로가기",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104"
-                        },
-                        {
-                            "label": "읽고 싶은 책으로 저장",
-                            "action": "block",
-                            "blockId": "62dd402d903c8b5a80058543",
-                            "extra": {
-                                "isbn": book['isbn'],
-                            }
-                        },
-                        {
-                            "label": "읽은 책으로 저장",
-                            "action": "block",
-                            "blockId": "62dd404bc7d05102c2ccffb4",
-                            "extra": {
-                                "isbn": book['isbn'],
-                            }
-                        }
-                    ]
-                }
-            }
+
+            blockid = BlockID()
+            itemList = response.itemList
+            button = response.button
+            itemCard = response.itemCard
+            kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+
+            itemLists = []
+            itemList1 = itemList.copy()
+            itemList1['title'] = '지은이'
+            itemList1['description'] = book['author']
+            itemLists.append(itemList1)
+
+            itemList2 = itemList.copy()
+            itemList2['title'] = '출판사'
+            itemList2['description'] = book['publisher']
+            itemLists.append(itemList2)
+
+            itemList3 = itemList.copy()
+            itemList3['title'] = '장르'
+            itemList3['description'] = book['genre']
+            itemLists.append(itemList3)
+            itemCard['itemCard']['itemList'] = itemLists
+
+            buttons = []
+            button1 = button.copy()
+            button1['action'] = 'webLink'
+            button1['label'] = '책 정보'
+            button1['webLinkUrl'] = kyobo_url
+            buttons.append(button1)
+
+            button2 = button.copy()
+            button2['action'] = 'block'
+            button2['label'] = '읽고 싶은 책으로'
+            button2['blockId'] = blockid.save_want
+            button2['extra']['isbn'] = book['isbn']
+            buttons.append(button2)
+            itemCard['itemCard']['buttons'] = buttons
+
+            itemCard['itemCard']['imageTitle']['title'] = book['title']
+            itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
+
+            simpleText['simpleText']['text'] = '찾으시는 책이 맞나요?'
+            outputs = [simpleText, itemCard]
+            responseBody['template']['outputs'] = outputs
+
         except Exception:
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                            {
-                                "simpleText": {
-                                    "text": "죄송하지만 찾는 책이 없습니다."
-                                }
-                            },
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로가기",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104"
-                        }
-                    ]
-                }
-            }
+            simpleText['simpleText']['text'] = '책을 찾지 못했어요..\n다시 한 번 정확하게 입력해 보세요!'
+            outputs = [simpleText]
+            responseBody['template']['outputs'] = outputs
+
         return responseBody
 
 
@@ -128,10 +119,16 @@ class Keyword(Resource):
     def post(self):
         data = Barcode.parser.parse_args()
         print(data)
+
         keyword = data['action']['params']['keyword']
         search = Searching()
         book = search.get_book(keyword)
         isbn = book['isbn'].split()[1]
+
+        response = Response()
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+
         try:
             check_book = BookModel.find_by_isbn(isbn)
             # 가져온 ISBN의 책이 DB에 없는 경우 카카오 API로 검색하여 저장
@@ -147,73 +144,56 @@ class Keyword(Resource):
             else:
                 book = check_book.json()
 
-            # 책 데이터 카드형으로 출력
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                        {
-                            "basicCard": {
-                                "title": book['title'],
-                                "description": book['author'],
-                                "thumbnail": {
-                                    "imageUrl": book['img']
-                                },
-                                "buttons": [
-                                    {
-                                        "action": "message",
-                                                  "label": "책 소개 보기",
-                                                  "messageText": book['summary']
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로가기",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104"
-                        },
-                        {
-                            "label": "읽고 싶은 책으로 저장",
-                            "action": "block",
-                            "blockId": "62dd402d903c8b5a80058543",
-                            "extra": {
-                                "isbn": book['isbn']
-                            }
-                        },
-                        {
-                            "label": "읽은 책으로 저장",
-                            "action": "block",
-                            "blockId": "62dd404bc7d05102c2ccffb4",
-                            "extra": {
-                                "isbn": book['isbn']
-                            }
-                        }
-                    ]
-                }
-            }
+            blockid = BlockID()
+            itemList = response.itemList
+            button = response.button
+            itemCard = response.itemCard
+            kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+
+            itemLists = []
+            itemList1 = itemList.copy()
+            itemList1['title'] = '지은이'
+            itemList1['description'] = book['author']
+            itemLists.append(itemList1)
+
+            itemList2 = itemList.copy()
+            itemList2['title'] = '출판사'
+            itemList2['description'] = book['publisher']
+            itemLists.append(itemList2)
+
+            itemList3 = itemList.copy()
+            itemList3['title'] = '장르'
+            itemList3['description'] = book['genre']
+            itemLists.append(itemList3)
+            itemCard['itemCard']['itemList'] = itemLists
+
+            buttons = []
+            button1 = button.copy()
+            button1['action'] = 'webLink'
+            button1['label'] = '책 정보'
+            button1['webLinkUrl'] = kyobo_url
+            buttons.append(button1)
+
+            button2 = button.copy()
+            button2['action'] = 'block'
+            button2['label'] = '읽고 싶은 책으로'
+            button2['blockId'] = blockid.save_want
+            button2['extra']['isbn'] = book['isbn']
+            buttons.append(button2)
+            itemCard['itemCard']['buttons'] = buttons
+
+            itemCard['itemCard']['imageTitle']['title'] = book['title']
+            itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
+
+            simpleText['simpleText']['text'] = '찾으시는 책이 맞나요?'
+            outputs = [simpleText, itemCard]
+            responseBody['template']['outputs'] = outputs
+
         except Exception:
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                            {
-                                "simpleText": {
-                                    "text": "죄송하지만 찾는 책이 없습니다."
-                                }
-                            },
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로가기",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104"
-                        }
-                    ]
-                }
-            }
+            simpleText['simpleText']['text'] = '책을 찾지 못했어요..\n다시 한 번 정확하게 입력해 보세요!'
+            outputs = [simpleText]
+            responseBody['template']['outputs'] = outputs
+
         return responseBody
 
 
