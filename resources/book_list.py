@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.book_list import BookListModel
 from models.user import UserModel
+from resources.response import Response, BlockID
 
 
 class BookList(Resource):
@@ -25,141 +26,61 @@ class BookList(Resource):
             user.save_to_db()
             print("id를 db에 저장했습니다.")
 
-        # 읽고 싶은 책 응답형
-        if status == '0':
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                        {
-                            "listCard": {
-                                "header": {
-                                    "title": "읽고 싶은 책 리스트"
-                                },
-                                "items": [
-                                ],
-                                "buttons": [
-                                    {
-                                        "label": "리스트 더보기",
-                                        "action": "message",
-                                        "messageText": "개발 예정입니다."
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로",
-                            "action": "block",
-                            "blockId": "62c90931903c8b5a8004448c",
-                        },
-                        {
-                            "label": "검색하여 추가",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104",
-                        },
-                        {
-                            "label": "읽은 책으로 변경",
-                            "action": "message",
-                            "messageText": "개발 예정입니다.",
-                        }
-                    ]
-                }
-            }
-        # 읽은 책 응답형
-        else:
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                        {
-                            "listCard": {
-                                "header": {
-                                    "title": "읽은 책 리스트"
-                                },
-                                "items": [
-                                ],
-                                "buttons": [
-                                    {
-                                        "label": "리스트 더보기",
-                                        "action": "message",
-                                        "messageText": "개발 예정입니다."
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로",
-                            "action": "block",
-                            "blockId": "62c90931903c8b5a8004448c",
-                        },
-                        {
-                            "label": "검색하여 추가",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104",
-                        }
-                    ]
-                }
-            }
-        # 공통 책 리스트
-        item = {
-            "title": "",
-            "description": "",
-            "imageUrl": "",
-            "action": "message",
-            "messageText": "개발 예정입니다.",
-        }
+        response = Response()
+        blockid = BlockID()
+        itemList = response.itemList
+        listItem = response.listItem
+        carousel_listCard = response.carousel_listCard
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+        listItems = []
+        itemLists = []
 
         # 저장한 책이 존재하면
         books = BookListModel.find_by_status(user_id, status)
+        cnt = 1
         if books:
-            outputs = responseBody['template']['outputs']
-            items = outputs[0]['listCard']['items']
-            # 보기
-            cnt = 0
             for book in books:
                 book_info = BookModel.find_by_isbn(book.json()['isbn']).json()
-                item['title'] = book_info['title']
-                description = (book_info['summary'][:50] + '...') if len(
-                    book_info['summary']) > 50 else book_info['summary']
-                item['description'] = description
-                item['imageUrl'] = book_info['img']
-                items.append(item.copy())
+                itemList1 = itemList.copy()
+                itemList1['title'] = book_info['title']
+                itemList1['description'] = book_info['author']
+                itemList1['imageUrl'] = book_info['img']
+                itemList1['action'] = 'block'
+                itemList1['blockId'] = blockid.save_review
+                extra = {'isbn': book_info['isbn']}
+                itemList1['extra'] = extra
+                itemLists.append(itemList1)
+
+                if cnt % 5 == 0:
+                    listItem1 = listItem.copy()
+                    listItem1['items'] = itemLists
+                    if status == '0':
+                        listItem1['header']['title'] = f'읽고 싶은 책 목록{cnt//5}'
+                    else:
+                        listItem1['header']['title'] = f'읽은 책 목록{cnt//5}'
+                    listItems.append(listItem1)
+                    itemLists = []
+                    if cnt == 25:
+                        break
                 cnt += 1
-                if cnt == 5:
-                    break
-        # 아직 저장한 책이 없다면
+
+            if cnt < 21:
+                listItem1 = listItem.copy()
+                listItem1['items'] = itemLists
+                if status == '0':
+                    listItem1['header']['title'] = f'읽고 싶은 책 목록{cnt//5}'
+                else:
+                    listItem1['header']['title'] = f'읽은 책 목록{cnt//5}'
+                listItems.append(listItem1)
+                itemLists = []
+
+            carousel_listCard['carousel']['items'] = listItems
+            simpleText['simpleText']['text'] = '읽고 싶던 책을 읽으며\n기분 전환을 해보세요!'
+            outputs = [simpleText, carousel_listCard]
+            responseBody['template']['outputs'] = outputs
         else:
-            responseBody = {
-                "version": "2.0",
-                "template": {
-                    "outputs": [
-                            {
-                                "simpleText": {
-                                    "text": "아직 저장한 책이 없으신가요? 책을 추천받아 저장해 보세요!"
-                                }
-                            },
-                    ],
-                    "quickReplies": [
-                        {
-                            "label": "뒤로",
-                            "action": "block",
-                            "blockId": "62c90931903c8b5a8004448c",
-                        },
-                        {
-                            "label": "검색하여 추가",
-                            "action": "block",
-                            "blockId": "62dd372c28d63278024d6104",
-                        },
-                        {
-                            "label": "책 추천 받기",
-                            "action": "block",
-                            "blockId": "62c7e7ade262a941bbdca4ea",
-                        }
-                    ]
-                }
-            }
+            simpleText['simpleText']['text'] = '아직 담은 책이 없네요.\n재밌는 책을 추천받아 보세요!'
+            outputs = [simpleText, carousel_listCard]
+            responseBody['template']['outputs'] = outputs
         return responseBody
