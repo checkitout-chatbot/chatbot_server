@@ -53,7 +53,6 @@ class Response:
                 "imageTitle": {
                     "title": "",
                     "imageUrl": "",
-                    "description": ""
                 },
                 "itemList": [
                 ],

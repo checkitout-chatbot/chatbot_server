@@ -42,7 +42,7 @@ class Today(Resource):  # 오늘의 추천
 
         buttons = []
         button1 = button.copy()
-        button1['action'] = 'webLinkUrl'
+        button1['action'] = 'webLink'
         button1['label'] = '책 정보'
         button1['webLinkUrl'] = kyobo_url
         buttons.append(button1)
