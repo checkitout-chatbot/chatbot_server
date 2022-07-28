@@ -1,8 +1,8 @@
 import random
-from flask import request
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from resources.search import Searching
+from resources.response import Response, BlockID
 
 
 class Today(Resource):  # 오늘의 추천
@@ -13,48 +13,55 @@ class Today(Resource):  # 오늘의 추천
         books = BookModel.find_by_bestseller()
         randint = random.randint(0, len(books))
         book = books[randint].json()
-        # 책 설명 50자 이상 넘어가면 요약
-        description = (
-            book['summary'][:50] + '...') if len(book['summary']) > 50 else book['summary']
-        responseBody = {
-            "version": "2.0",
-            "template": {
-                "outputs": [
-                    {
-                        "basicCard": {
-                            "title": book['title'],
-                            "description": description,
-                            "thumbnail": {
-                                "imageUrl": book['img']
-                            },
-                        }
-                    }
-                ],
-                "quickReplies": [
-                    {
-                        "label": "뒤로가기",
-                        "action": "block",
-                        "blockId": "62dd372c28d63278024d6104"
-                    },
-                    {
-                        "label": "읽고 싶은 책으로 저장",
-                        "action": "block",
-                        "blockId": "62dd402d903c8b5a80058543",
-                        "extra": {
-                            "isbn": book['isbn'],
-                        }
-                    },
-                    {
-                        "label": "읽은 책으로 저장",
-                        "action": "block",
-                        "blockId": "62dd404bc7d05102c2ccffb4",
-                        "extra": {
-                            "isbn": book['isbn'],
-                        }
-                    }
-                ]
-            }
-        }
+
+        blockid = BlockID()
+        response = Response()
+        itemList = response.itemList
+        button = response.button
+        itemCard = response.itemCard
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+        kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+
+        itemLists = []
+        itemList1 = itemList.copy()
+        itemList1['title'] = '지은이'
+        itemList1['description'] = book['author']
+        itemLists.append(itemList1)
+
+        itemList2 = itemList.copy()
+        itemList2['title'] = '출판사'
+        itemList2['description'] = book['publisher']
+        itemLists.append(itemList2)
+
+        itemList3 = itemList.copy()
+        itemList3['title'] = '장르'
+        itemList3['description'] = book['genre']
+        itemLists.append(itemList3)
+        itemCard['itemCard']['itemList'] = itemLists
+
+        buttons = []
+        button1 = button.copy()
+        button1['action'] = 'webLinkUrl'
+        button1['label'] = '책 정보'
+        button1['webLinkUrl'] = kyobo_url
+        buttons.append(button1)
+
+        button2 = button.copy()
+        button2['action'] = 'block'
+        button2['label'] = '책 저장'
+        button2['blockId'] = blockid.save_menu
+        button2['extra']['isbn'] = book['isbn']
+        buttons.append(button2)
+        itemCard['itemCard']['buttons'] = buttons
+
+        itemCard['itemCard']['imageTitle']['title'] = book['title']
+        itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
+
+        simpleText['simpleText']['text'] = '고심해서 고른 책이에요 어떠세요??'
+        outputs = [simpleText, itemCard]
+        responseBody['template']['outputs'] = outputs
+
         return responseBody
 
 
