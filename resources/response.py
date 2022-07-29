@@ -94,6 +94,7 @@ class BlockID:
         self.save_menu = '62e28d6e0326e262b80b4183'
         self.list_want = '62bf084750b23b1e3a6e2655'
         self.list_review = '62bef98450b23b1e3a6e25ba'
+        self.view_review = '62e465e7fa3e133a938dd091'
 
 
 if __name__ == "__main__":
