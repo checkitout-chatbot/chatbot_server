@@ -100,9 +100,6 @@ class Similar(Resource):  # 비슷한 책 추천
             # 랜덤으로 책 6개 books에 넣기
             books = [BookModel.find_by_isbn(
                 similar_books[rand_ints[i]]).json() for i in range(6)]
-            #  for i in range(0, 6):
-            #      globals()[f'book{i}'] = BookModel.find_by_isbn(
-            #          similar_books[rand_ints[i]]).json()
 
             items = []
             for book in books:
@@ -125,7 +122,7 @@ class Similar(Resource):  # 비슷한 책 추천
                 itemList3['title'] = '장르'
                 itemList3['description'] = book['genre']
                 itemLists.append(itemList3)
-                item['itemList'] = itemLists
+                item1['itemList'] = itemLists
 
                 buttons = []
                 button1 = deepcopy(button)
@@ -141,7 +138,7 @@ class Similar(Resource):  # 비슷한 책 추천
                 button2['blockId'] = blockid.save_want
                 button2['extra']['isbn'] = book['isbn']
                 buttons.append(button2)
-                item['buttons'] = buttons
+                item1['buttons'] = buttons
 
                 items.append(item1)
 
