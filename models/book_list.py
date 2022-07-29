@@ -29,6 +29,10 @@ class BookListModel(db.Model):
         return cls.query.filter_by(username=username, status=status).all()
 
     @classmethod
+    def find_by_status_isbn(cls, isbn, username, status):
+        return cls.query.filter_by(isbn=isbn, username=username, status=status).first()
+
+    @classmethod
     def find_by_book(cls, isbn, username):
         return cls.query.filter_by(isbn=isbn, username=username).first()
 
