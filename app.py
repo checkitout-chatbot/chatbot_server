@@ -7,10 +7,10 @@ from flask_jwt import JWT
 from security import authenticate, identity
 from resources.user import UserRegister
 from resources.book import Book
-from resources.book_list import BookList
+from resources.book_list import BookListWant, BookListReview
 from resources.recommend import Today, Similar, Sense, Social
 from resources.search import Barcode, Keyword
-from resources.edit_list import SaveWanted, SaveReview
+from resources.edit_list import SaveWanted, SaveReview, ViewReview
 
 app = Flask(__name__)
 
@@ -37,11 +37,13 @@ api.add_resource(Social, '/recommend/social')
 
 # 저장한 책 리스트 확인
 # 0: 읽고 싶은 책 1: 읽은 책
-api.add_resource(BookList, '/booklist/<string:status>')
+api.add_resource(BookListWant, '/booklist/0')
+api.add_resource(BookListReview, '/booklist/1')
 
 # 책 리스트 저장
 api.add_resource(SaveWanted, '/save/0')
 api.add_resource(SaveReview, '/save/1')
+api.add_resource(ViewReview, '/view/review')
 
 # 책 검색
 api.add_resource(Keyword, '/search/keyword')
