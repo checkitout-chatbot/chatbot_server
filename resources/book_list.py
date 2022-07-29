@@ -1,3 +1,4 @@
+from copy import deepcopy
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.book_list import BookListModel
@@ -38,11 +39,13 @@ class BookList(Resource):
 
         # 저장한 책이 존재하면
         books = BookListModel.find_by_status(user_id, status)
-        cnt = 1
+        cnt = 0
         if books:
             for book in books:
+                cnt += 1
+
                 book_info = BookModel.find_by_isbn(book.json()['isbn']).json()
-                itemList1 = itemList.copy()
+                itemList1 = deepcopy(itemList)
                 itemList1['title'] = book_info['title']
                 itemList1['description'] = book_info['author']
                 itemList1['imageUrl'] = book_info['img']
@@ -52,31 +55,35 @@ class BookList(Resource):
                 itemList1['extra'] = extra
                 itemLists.append(itemList1)
 
+                # 리스트형 아이템 최대 5개까지 출력
                 if cnt % 5 == 0:
-                    listItem1 = listItem.copy()
+                    listItem1 = deepcopy(listItem)
                     listItem1['items'] = itemLists
                     if status == '0':
-                        listItem1['header']['title'] = f'읽고 싶은 책 목록{cnt//5}'
+                        listItem1['header']['title'] = f'읽고 싶은 책 목록'
                     else:
-                        listItem1['header']['title'] = f'읽은 책 목록{cnt//5}'
+                        listItem1['header']['title'] = f'읽은 책 목록'
                     listItems.append(listItem1)
                     itemLists = []
+                    # 케로셀 리스트형 카드 최대 5개까지 출력
                     if cnt == 25:
                         break
-                cnt += 1
 
-            if cnt < 21:
-                listItem1 = listItem.copy()
+            # for문에서는 5로 나눠질 때만 리스트를 만들기 때문에 추가 리스트 필요
+            # 5 번째 리스트에서는 추가 필요x / 딱 맞을 때도 필요x
+            print(cnt)
+            if cnt < 21 and cnt % 5 != 0:
+                listItem1 = deepcopy(listItem)
                 listItem1['items'] = itemLists
                 if status == '0':
-                    listItem1['header']['title'] = f'읽고 싶은 책 목록{cnt//5}'
+                    listItem1['header']['title'] = f'읽고 싶은 책 목록'
                 else:
-                    listItem1['header']['title'] = f'읽은 책 목록{cnt//5}'
+                    listItem1['header']['title'] = f'읽은 책 목록'
                 listItems.append(listItem1)
                 itemLists = []
 
             carousel_listCard['carousel']['items'] = listItems
-            simpleText['simpleText']['text'] = '읽고 싶던 책을 읽으며\n기분 전환을 해보세요!'
+            simpleText['simpleText']['text'] = '내 서재에 차곡차곡 쌓인 책들을 보면 기분이 좋아져요 :)'
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
         else:
