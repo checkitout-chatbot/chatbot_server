@@ -1,3 +1,4 @@
+from copy import deepcopy
 import random
 from flask_restful import Resource, reqparse
 from models.book import BookModel
@@ -27,30 +28,30 @@ class Today(Resource):  # 오늘의 추천
         kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
 
         itemLists = []
-        itemList1 = itemList.copy()
+        itemList1 = deepcopy(itemList)
         itemList1['title'] = '지은이'
         itemList1['description'] = book['author']
         itemLists.append(itemList1)
 
-        itemList2 = itemList.copy()
+        itemList2 = deepcopy(itemList)
         itemList2['title'] = '출판사'
         itemList2['description'] = book['publisher']
         itemLists.append(itemList2)
 
-        itemList3 = itemList.copy()
+        itemList3 = deepcopy(itemList)
         itemList3['title'] = '장르'
         itemList3['description'] = book['genre']
         itemLists.append(itemList3)
         itemCard['itemCard']['itemList'] = itemLists
 
         buttons = []
-        button1 = button.copy()
+        button1 = deepcopy(button)
         button1['action'] = 'webLink'
         button1['label'] = '책 정보'
         button1['webLinkUrl'] = kyobo_url
         buttons.append(button1)
 
-        button2 = button.copy()
+        button2 = deepcopy(button)
         button2['action'] = 'block'
         button2['label'] = '읽고 싶은 책으로'
         button2['blockId'] = blockid.save_want
@@ -105,32 +106,36 @@ class Similar(Resource):  # 비슷한 책 추천
 
             items = []
             for book in books:
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = book['title']
+                item1['imageTitle']['imageUrl'] = book['img']
+
                 itemLists = []
-                itemList1 = itemList.copy()
+                itemList1 = deepcopy(itemList)
                 itemList1['title'] = '지은이'
                 itemList1['description'] = book['author']
                 itemLists.append(itemList1)
 
-                itemList2 = itemList.copy()
+                itemList2 = deepcopy(itemList)
                 itemList2['title'] = '출판사'
                 itemList2['description'] = book['publisher']
                 itemLists.append(itemList2)
 
-                itemList3 = itemList.copy()
+                itemList3 = deepcopy(itemList)
                 itemList3['title'] = '장르'
                 itemList3['description'] = book['genre']
                 itemLists.append(itemList3)
                 item['itemList'] = itemLists
 
                 buttons = []
-                button1 = button.copy()
+                button1 = deepcopy(button)
                 button1['action'] = 'webLink'
                 button1['label'] = '책 정보'
                 kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
                 button1['webLinkUrl'] = kyobo_url
                 buttons.append(button1)
 
-                button2 = button.copy()
+                button2 = deepcopy(button)
                 button2['action'] = 'block'
                 button2['label'] = '읽고 싶은 책으로'
                 button2['blockId'] = blockid.save_want
@@ -138,9 +143,6 @@ class Similar(Resource):  # 비슷한 책 추천
                 buttons.append(button2)
                 item['buttons'] = buttons
 
-                item1 = item.copy()
-                item1['imageTitle']['title'] = book['title']
-                item1['imageTitle']['imageUrl'] = book['img']
                 items.append(item1)
 
             carousel_itemCard['carousel']['items'] = items
