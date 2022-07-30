@@ -4,12 +4,15 @@ from models.book import BookModel
 from resources.response import Response, BlockID
 import requests
 import json
+from hanspell import spell_checker
 
 
 class Searching:
     def __init__(self):
         self.REST_API_KEY = 'c8981be15dbb94247a93cce5e564653b'
         self.url = "https://dapi.kakao.com/v3/search/book"
+        self.ClientID = 'lxpEmdQK9H4_K82OcTP4'
+        self.ClientPW = 'p8veOL4_q7'
 
     def get_isbn(self, query):
         queryString = {"query": query}
@@ -23,9 +26,26 @@ class Searching:
         queryString = {"query": query}
         header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
         r = requests.get(self.url, headers=header, params=queryString)
+        books = json.loads(r.text)['documents']
+
+        if len(books) == 0:
+            query = spell_checker.check(query)
+            query = query.checked
+            queryString = {"query": query}
+            header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
+            r = requests.get(self.url, headers=header, params=queryString)
+            books = json.loads(r.text)['documents']
+        return books
+
+    def get_book_by_naver(self, query):
+        url = 'https://openapi.naver.com/v1/search/book.json'
+        queryString = {"query": query}
+        header = {'X-Naver-Client-Id': self.ClientID,
+                  'X-Naver-Client-Secret': self.ClientPW}
+        r = requests.get(url, headers=header, params=queryString)
         books = json.loads(r.text)
-        book = books['documents'][0]
-        return book
+        #  book = books['documents'][0]
+        return books
 
 
 class Barcode(Resource):
@@ -57,7 +77,6 @@ class Barcode(Resource):
                                  book['contents'], book['thumbnail'], None, None, None, None)
                 book.save_to_db()
 
-            # 책 데이터 카드형으로 출력
             book = book.json()
 
             blockid = BlockID()
@@ -247,10 +266,23 @@ class Keyword(Resource):
 
 
 if __name__ == '__main__':
-    #  title = input("찾고 싶은 책의 제목을 입력하세요: ")
-    keyword = "미움 받을 용기 - 기시미 이치로"
-    isbn = "9788996991342"
     search = Searching()
-    print(search.get_isbn(keyword))
-    print(search.get_book(isbn)['authors'])
-    print(", ".join(search.get_book(isbn)['authors']))
+    keyword = '연어'
+
+    #  print('여기는 네이버')
+    #  books = search.get_book_by_naver(keyword)
+    #  for book in books['items']:
+    #      print(book['title'])
+    #      print(book['author'])
+
+    print('여기는 카카오')
+    books = search.get_book(keyword)
+    for book in books:
+        print(book['title'])
+        print(", ".join(book['authors']))
+
+    #  keyword = "맞춤법 틀리면 외 않되? 쓰고싶은대로쓰면돼지 "
+    #  print(search.get_book(keyword))
+    #  print(search.get_book(keyword))
+    #  print(search.get_book(isbn)['authors'])
+    #  print(", ".join(search.get_book(isbn)['authors']))
