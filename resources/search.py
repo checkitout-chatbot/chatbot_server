@@ -199,14 +199,7 @@ class Keyword(Resource):
             button1['webLinkUrl'] = kyobo_url
             buttons.append(button1)
 
-            button2 = button.copy()
-            button2['action'] = 'block'
-            button2['label'] = '읽고 싶은 책으로'
-            button2['blockId'] = blockid.save_want
-            button2['extra']['isbn'] = book['isbn']
-            buttons.append(button2)
             itemCard['itemCard']['buttons'] = buttons
-
             itemCard['itemCard']['imageTitle']['title'] = book['title']
             itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
 

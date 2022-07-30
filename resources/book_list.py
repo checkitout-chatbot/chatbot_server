@@ -30,6 +30,7 @@ class BookListWant(Resource):
         carousel_listCard = response.carousel_listCard
         simpleText = response.simpleText
         responseBody = response.responseBody
+        quickReply = response.quickReply
         listItems = []
         itemLists = []
 
@@ -76,10 +77,44 @@ class BookListWant(Resource):
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
 
+            quickReplies = []
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.list_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+            responseBody['template']['quickReplies'] = quickReplies
+
         else:
             simpleText['simpleText']['text'] = '아직 담은 책이 없네요.\n재밌는 책을 추천받아 보세요!'
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.list_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            quickReply3 = deepcopy(quickReply)
+            quickReply3['action'] = 'block'
+            quickReply3['label'] = '추천 받기'
+            quickReply3['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply3)
+            responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
 
@@ -104,6 +139,7 @@ class BookListReview(Resource):
         carousel_listCard = response.carousel_listCard
         simpleText = response.simpleText
         responseBody = response.responseBody
+        quickReply = response.quickReply
         listItems = []
         itemLists = []
 
@@ -150,9 +186,43 @@ class BookListReview(Resource):
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
 
+            quickReplies = []
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.list_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+            responseBody['template']['quickReplies'] = quickReplies
+
         else:
             simpleText['simpleText']['text'] = '아직 담은 책이 없네요.\n재밌는 책을 추천받아 보세요!'
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.list_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            quickReply3 = deepcopy(quickReply)
+            quickReply3['action'] = 'block'
+            quickReply3['label'] = '추천 받기'
+            quickReply3['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply3)
+            responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
