@@ -35,6 +35,8 @@ class Searching:
             header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
             r = requests.get(self.url, headers=header, params=queryString)
             books = json.loads(r.text)['documents']
+            if len(books) == 0:
+                books = ['NULL']
         return books[0]
 
     def get_book_by_naver(self, query):
@@ -44,7 +46,6 @@ class Searching:
                   'X-Naver-Client-Secret': self.ClientPW}
         r = requests.get(url, headers=header, params=queryString)
         books = json.loads(r.text)
-        #  book = books['documents'][0]
         return books
 
 

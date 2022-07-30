@@ -4,9 +4,7 @@ from resources.response import Response, BlockID
 from resources.user import UserRegister
 from copy import deepcopy
 import re
-import logging
-
-logging.basicConfig(level=logging.INFO)
+import log
 
 
 class SaveWanted(Resource):
@@ -16,7 +14,7 @@ class SaveWanted(Resource):
 
     def post(self):
         data = SaveWanted.parser.parse_args()
-        logging.info(data)
+        log.info_log(data)
 
         # 신규유저면 DB에 저장
         user_id = data['userRequest']['user']['id']
@@ -87,7 +85,7 @@ class SaveWanted(Resource):
                 responseBody['template']['quickReplies'] = quickReplies
 
         except Exception as e:
-            logging.error(e)
+            log.error_log(e)
 
             simpleText['simpleText']['text'] = '죄송합니다. 오류가 발생했습니다. 탈출해 주세요!'
             outputs = [simpleText]
@@ -117,7 +115,7 @@ class SaveReview(Resource):
 
     def post(self):
         data = SaveReview.parser.parse_args()
-        logging.info(data)
+        log.info_log(data)
 
         # 신규유저면 DB에 저장
         user_id = data['userRequest']['user']['id']
@@ -204,7 +202,7 @@ class SaveReview(Resource):
                 responseBody['template']['quickReplies'] = quickReplies
 
         except Exception as e:
-            logging.error(e)
+            log.error_log(e)
 
             simpleText['simpleText']['text'] = '죄송합니다. 오류가 발생했습니다. 탈출해 주세요!'
             outputs = [simpleText]
@@ -234,7 +232,7 @@ class ViewReview(Resource):
 
     def post(self):
         data = ViewReview.parser.parse_args()
-        logging.info(data)
+        log.info_log(data)
 
         isbn = data['action']['clientExtra']['isbn']
         user_id = data['userRequest']['user']['id']

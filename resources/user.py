@@ -1,8 +1,6 @@
 from flask_restful import Resource, reqparse
 from models.user import UserModel
-import logging
-
-logging.basicConfig(level=logging.INFO)
+import log
 
 
 class UserRegister(Resource):
@@ -15,6 +13,7 @@ class UserRegister(Resource):
 
     def post(self):
         data = UserRegister.parser.parse_args()
+        log.info_log(data)
 
         if UserModel.find_by_username(data['username']):
             return {"message": "해당 user id는 이미 존재합니다."}, 400
@@ -29,4 +28,4 @@ class UserRegister(Resource):
         if checking == None:
             user = UserModel(user_id, user_id)
             user.save_to_db()
-            logging.info(f"USER {user_id}를 저장했습니다.")
+            log.info_log('User가 성공적으로 등록되었습니다.')

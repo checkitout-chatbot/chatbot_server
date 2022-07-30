@@ -12,7 +12,10 @@ reload = True
 # port 주소
 bind = '0.0.0.0:5000'
 
-# errorlog의 level
-loglevel = 'info'
 # gunicorn access log파일 경로
-accesslog = 'log/gunicorn.log'
+accesslog = 'log/itggi_access.log'
+
+# errorlog의 level
+#  loglevel = 'info'
+# gunicorn error log파일 경로
+#  errorlog = 'log/itggi_error.log'

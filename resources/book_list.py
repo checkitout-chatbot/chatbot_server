@@ -4,10 +4,7 @@ from models.book import BookModel
 from models.book_list import BookListModel
 from resources.user import UserRegister
 from resources.response import Response, BlockID
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
+import log
 # 읽고 싶은 책 리스트 보기
 
 
@@ -17,7 +14,7 @@ class BookListWant(Resource):
 
     def post(self):
         data = BookListWant.parser.parse_args()
-        logging.info(data)
+        log.info_log(data)
 
         # 신규유저면 DB에 저장
         user_id = data['userRequest']['user']['id']
@@ -126,7 +123,7 @@ class BookListReview(Resource):
 
     def post(self):
         data = BookListReview.parser.parse_args()
-        logging.info(data)
+        log.info_log(data)
 
         # 신규유저면 DB에 저장
         user_id = data['userRequest']['user']['id']
