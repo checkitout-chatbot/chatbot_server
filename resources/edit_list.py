@@ -267,3 +267,50 @@ class ViewReview(Resource):
         responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
+
+
+class SaveMenu(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('action', type=dict, required=True)
+    parser.add_argument('userRequest', type=dict, required=True)
+
+    def post(self):
+        data = SaveWanted.parser.parse_args()
+        log.info_log(data)
+
+        isbn = data['action']['clientExtra']['isbn']
+
+        response = Response()
+        blockid = BlockID()
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+        quickReply = response.quickReply
+
+        # 리스트에 등록된 책인지 확인
+        simpleText['simpleText']['text'] = '어디로 저장할까요??'
+        outputs = [simpleText]
+        responseBody['template']['outputs'] = outputs
+
+        quickReplies = []
+        quickReply1 = deepcopy(quickReply)
+        quickReply1['action'] = 'block'
+        quickReply1['label'] = '뒤로가기'
+        quickReply1['blockId'] = blockid.list_menu
+        quickReplies.append(quickReply1)
+
+        quickReply2 = deepcopy(quickReply)
+        quickReply2['action'] = 'block'
+        quickReply2['label'] = '🙈 읽고 싶은 책으로'
+        quickReply2['blockId'] = blockid.save_want
+        quickReply2['extra']['isbn'] = isbn
+        quickReplies.append(quickReply2)
+
+        quickReply3 = deepcopy(quickReply)
+        quickReply3['action'] = 'block'
+        quickReply3['label'] = '🙉 읽은 책으로'
+        quickReply3['blockId'] = blockid.save_review
+        quickReply3['extra']['isbn'] = isbn
+        quickReplies.append(quickReply3)
+        responseBody['template']['quickReplies'] = quickReplies
+
+        return responseBody
