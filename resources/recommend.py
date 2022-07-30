@@ -51,20 +51,45 @@ class Today(Resource):  # 오늘의 추천
         button1['webLinkUrl'] = kyobo_url
         buttons.append(button1)
 
-        button2 = deepcopy(button)
-        button2['action'] = 'block'
-        button2['label'] = '읽고 싶은 책으로'
-        button2['blockId'] = blockid.save_want
-        button2['extra']['isbn'] = book['isbn']
-        buttons.append(button2)
         itemCard['itemCard']['buttons'] = buttons
-
         itemCard['itemCard']['imageTitle']['title'] = book['title']
         itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
 
         simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
+
         outputs = [simpleText, itemCard]
         responseBody['template']['outputs'] = outputs
+
+        quickReplies = []
+        quickReply = response.quickReply
+
+        quickReply1 = deepcopy(quickReply)
+        quickReply1['action'] = 'block'
+        quickReply1['label'] = '뒤로가기'
+        quickReply1['blockId'] = blockid.recom_menu
+        quickReplies.append(quickReply1)
+
+        quickReply2 = deepcopy(quickReply)
+        quickReply2['action'] = 'block'
+        quickReply2['label'] = '도움말'
+        quickReply2['blockId'] = blockid.howto
+        quickReplies.append(quickReply2)
+
+        quickReply3 = deepcopy(quickReply)
+        quickReply3['action'] = 'block'
+        quickReply3['label'] = '읽고 싶은 책으로'
+        quickReply3['blockId'] = blockid.save_want
+        quickReply3['extra']['isbn'] = book['isbn']
+        quickReplies.append(quickReply3)
+
+        quickReply4 = deepcopy(quickReply)
+        quickReply4['action'] = 'block'
+        quickReply4['label'] = '읽은 책으로'
+        quickReply4['blockId'] = blockid.save_review
+        quickReply4['extra']['isbn'] = book['isbn']
+        quickReplies.append(quickReply4)
+
+        responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
 
@@ -100,9 +125,6 @@ class Similar(Resource):  # 비슷한 책 추천
             # 랜덤으로 책 6개 books에 넣기
             books = [BookModel.find_by_isbn(
                 similar_books[rand_ints[i]]).json() for i in range(6)]
-            #  for i in range(0, 6):
-            #      globals()[f'book{i}'] = BookModel.find_by_isbn(
-            #          similar_books[rand_ints[i]]).json()
 
             items = []
             for book in books:
@@ -125,7 +147,7 @@ class Similar(Resource):  # 비슷한 책 추천
                 itemList3['title'] = '장르'
                 itemList3['description'] = book['genre']
                 itemLists.append(itemList3)
-                item['itemList'] = itemLists
+                item1['itemList'] = itemLists
 
                 buttons = []
                 button1 = deepcopy(button)
@@ -137,18 +159,36 @@ class Similar(Resource):  # 비슷한 책 추천
 
                 button2 = deepcopy(button)
                 button2['action'] = 'block'
-                button2['label'] = '읽고 싶은 책으로'
-                button2['blockId'] = blockid.save_want
+                button2['label'] = '책 저장'
+                button2['blockId'] = blockid.save_menu
                 button2['extra']['isbn'] = book['isbn']
                 buttons.append(button2)
-                item['buttons'] = buttons
+                item1['buttons'] = buttons
 
                 items.append(item1)
 
             carousel_itemCard['carousel']['items'] = items
             simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
+
             outputs = [simpleText, carousel_itemCard]
             responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply = response.quickReply
+
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            responseBody['template']['quickReplies'] = quickReplies
 
         except Exception:
             simpleText['simpleText']['text'] = '비슷한 책을 찾지 못했어요 죄송해요ㅠㅠ'

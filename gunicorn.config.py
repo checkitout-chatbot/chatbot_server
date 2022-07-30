@@ -7,7 +7,7 @@ workers = multiprocessing.cpu_count() * 2 + 1
 wsgi_app = 'run:app'
 
 # code가 변경될 때 마다 worker가 재시작
-#reload = True
+reload = True
 
 # port 주소
 bind = '0.0.0.0:5000'
