@@ -35,7 +35,7 @@ class Searching:
             header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
             r = requests.get(self.url, headers=header, params=queryString)
             books = json.loads(r.text)['documents']
-        return books
+        return books[0]
 
     def get_book_by_naver(self, query):
         url = 'https://openapi.naver.com/v1/search/book.json'
