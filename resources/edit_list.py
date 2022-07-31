@@ -357,6 +357,18 @@ class DeleteBook(Resource):
         quickReply2['blockId'] = blockid.howto
         quickReplies.append(quickReply2)
 
+        quickReply3 = deepcopy(quickReply)
+        quickReply3['action'] = 'block'
+        quickReply3['label'] = '읽고 싶은 책 목록'
+        quickReply3['blockId'] = blockid.list_want
+        quickReplies.append(quickReply3)
+
+        quickReply4 = deepcopy(quickReply)
+        quickReply4['action'] = 'block'
+        quickReply4['label'] = '읽은 책 목록'
+        quickReply4['blockId'] = blockid.list_review
+        quickReplies.append(quickReply4)
+
         responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
