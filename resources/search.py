@@ -5,6 +5,7 @@ from resources.response import Response, BlockID
 import requests
 import json
 from hanspell import spell_checker
+import log
 
 
 class Searching:
@@ -35,6 +36,8 @@ class Searching:
             header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
             r = requests.get(self.url, headers=header, params=queryString)
             books = json.loads(r.text)['documents']
+            if len(books) == 0:
+                books = ['NULL']
         return books[0]
 
     def get_book_by_naver(self, query):
@@ -44,7 +47,6 @@ class Searching:
                   'X-Naver-Client-Secret': self.ClientPW}
         r = requests.get(url, headers=header, params=queryString)
         books = json.loads(r.text)
-        #  book = books['documents'][0]
         return books
 
 
@@ -55,7 +57,7 @@ class Barcode(Resource):
     def post(self):
         import re
         data = Barcode.parser.parse_args()
-        print(data)
+        log.info_log(data)
         barcode = data['action']['params']['barcode']
         barcode = re.sub("[^0-9]", "", barcode)
 
@@ -109,6 +111,13 @@ class Barcode(Resource):
             button1['webLinkUrl'] = kyobo_url
             buttons.append(button1)
 
+            button2 = deepcopy(button)
+            button2['action'] = 'block'
+            button2['label'] = '책 저장'
+            button2['blockId'] = blockid.save_menu
+            button2['extra']['isbn'] = book['isbn']
+            buttons.append(button2)
+
             itemCard['itemCard']['buttons'] = buttons
             itemCard['itemCard']['imageTitle']['title'] = book['title']
             itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
@@ -131,20 +140,6 @@ class Barcode(Resource):
             quickReply2['label'] = '도움말'
             quickReply2['blockId'] = blockid.howto
             quickReplies.append(quickReply2)
-
-            quickReply3 = deepcopy(quickReply)
-            quickReply3['action'] = 'block'
-            quickReply3['label'] = '읽고 싶은 책으로'
-            quickReply3['blockId'] = blockid.save_want
-            quickReply3['extra']['isbn'] = book['isbn']
-            quickReplies.append(quickReply3)
-
-            quickReply4 = deepcopy(quickReply)
-            quickReply4['action'] = 'block'
-            quickReply4['label'] = '읽은 책으로'
-            quickReply4['blockId'] = blockid.save_review
-            quickReply4['extra']['isbn'] = book['isbn']
-            quickReplies.append(quickReply4)
 
             responseBody['template']['quickReplies'] = quickReplies
 
@@ -218,6 +213,13 @@ class Keyword(Resource):
             button1['webLinkUrl'] = kyobo_url
             buttons.append(button1)
 
+            button2 = deepcopy(button)
+            button2['action'] = 'block'
+            button2['label'] = '책 저장'
+            button2['blockId'] = blockid.save_menu
+            button2['extra']['isbn'] = book['isbn']
+            buttons.append(button2)
+
             itemCard['itemCard']['buttons'] = buttons
             itemCard['itemCard']['imageTitle']['title'] = book['title']
             itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
@@ -240,20 +242,6 @@ class Keyword(Resource):
             quickReply2['label'] = '도움말'
             quickReply2['blockId'] = blockid.howto
             quickReplies.append(quickReply2)
-
-            quickReply3 = deepcopy(quickReply)
-            quickReply3['action'] = 'block'
-            quickReply3['label'] = '읽고 싶은 책으로'
-            quickReply3['blockId'] = blockid.save_want
-            quickReply3['extra']['isbn'] = book['isbn']
-            quickReplies.append(quickReply3)
-
-            quickReply4 = deepcopy(quickReply)
-            quickReply4['action'] = 'block'
-            quickReply4['label'] = '읽은 책으로'
-            quickReply4['blockId'] = blockid.save_review
-            quickReply4['extra']['isbn'] = book['isbn']
-            quickReplies.append(quickReply4)
 
             responseBody['template']['quickReplies'] = quickReplies
 

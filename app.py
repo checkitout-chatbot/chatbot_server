@@ -10,7 +10,7 @@ from resources.book import Book
 from resources.book_list import BookListWant, BookListReview
 from resources.recommend import Today, Similar, Sense, Social
 from resources.search import Barcode, Keyword
-from resources.edit_list import SaveWanted, SaveReview, ViewReview
+from resources.edit_list import SaveWanted, SaveReview, ViewReview, SaveMenu
 
 app = Flask(__name__)
 
@@ -43,6 +43,7 @@ api.add_resource(BookListReview, '/booklist/1')
 # 책 리스트 저장
 api.add_resource(SaveWanted, '/save/0')
 api.add_resource(SaveReview, '/save/1')
+api.add_resource(SaveMenu, '/save/menu')
 api.add_resource(ViewReview, '/view/review')
 
 # 책 검색

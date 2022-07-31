@@ -4,6 +4,7 @@ from flask_restful import Resource, reqparse
 from models.book import BookModel
 from resources.search import Searching
 from resources.response import Response, BlockID
+import log
 
 
 class Today(Resource):  # 오늘의 추천
@@ -11,7 +12,7 @@ class Today(Resource):  # 오늘의 추천
 
     def post(self):
         data = Today.parser.parse_args()
-        print(data)
+        log.info_log(data)
 
         # bestseller 목록 전체 가져와서 랜덤으로 한 권 뽑기
         books = BookModel.find_by_bestseller()
@@ -51,6 +52,13 @@ class Today(Resource):  # 오늘의 추천
         button1['webLinkUrl'] = kyobo_url
         buttons.append(button1)
 
+        button2 = deepcopy(button)
+        button2['action'] = 'block'
+        button2['label'] = '책 저장'
+        button2['blockId'] = blockid.save_menu
+        button2['extra']['isbn'] = book['isbn']
+        buttons.append(button2)
+
         itemCard['itemCard']['buttons'] = buttons
         itemCard['itemCard']['imageTitle']['title'] = book['title']
         itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
@@ -75,20 +83,6 @@ class Today(Resource):  # 오늘의 추천
         quickReply2['blockId'] = blockid.howto
         quickReplies.append(quickReply2)
 
-        quickReply3 = deepcopy(quickReply)
-        quickReply3['action'] = 'block'
-        quickReply3['label'] = '읽고 싶은 책으로'
-        quickReply3['blockId'] = blockid.save_want
-        quickReply3['extra']['isbn'] = book['isbn']
-        quickReplies.append(quickReply3)
-
-        quickReply4 = deepcopy(quickReply)
-        quickReply4['action'] = 'block'
-        quickReply4['label'] = '읽은 책으로'
-        quickReply4['blockId'] = blockid.save_review
-        quickReply4['extra']['isbn'] = book['isbn']
-        quickReplies.append(quickReply4)
-
         responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
@@ -100,7 +94,7 @@ class Similar(Resource):  # 비슷한 책 추천
 
     def post(self):
         data = Similar.parser.parse_args()
-        print(data)
+        log.info_log(data)
 
         blockid = BlockID()
         response = Response()
@@ -190,7 +184,9 @@ class Similar(Resource):  # 비슷한 책 추천
 
             responseBody['template']['quickReplies'] = quickReplies
 
-        except Exception:
+        except Exception as e:
+            log.error_log(e)
+
             simpleText['simpleText']['text'] = '비슷한 책을 찾지 못했어요 죄송해요ㅠㅠ'
             outputs = [simpleText]
             responseBody['template']['outputs'] = outputs
@@ -203,7 +199,7 @@ class Sense(Resource):  # 알잘딱깔센 추천
 
     def post(self):
         data = Similar.parser.parse_args()
-        print(data)
+        log.info_log(data)
 
         response = Response()
         simpleText = response.simpleText
@@ -221,7 +217,7 @@ class Social(Resource):  # 소셜 추천
 
     def post(self):
         data = Similar.parser.parse_args()
-        print(data)
+        log.info_log(data)
 
         response = Response()
         simpleText = response.simpleText
