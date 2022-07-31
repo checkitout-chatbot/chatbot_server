@@ -44,7 +44,7 @@ class BookListWant(Resource):
                 itemList1['description'] = book_info['author']
                 itemList1['imageUrl'] = book_info['img']
                 itemList1['action'] = 'block'
-                itemList1['blockId'] = blockid.save_review
+                itemList1['blockId'] = blockid.edit_menu
                 extra = {'isbn': book_info['isbn']}
                 itemList1['extra'] = extra
                 itemLists.append(itemList1)
@@ -70,7 +70,7 @@ class BookListWant(Resource):
                 itemLists = []
 
             carousel_listCard['carousel']['items'] = listItems
-            simpleText['simpleText']['text'] = '책을 누르시면 평점을 남기고 읽은 책 서재에 담을 수 있어요!'
+            simpleText['simpleText']['text'] = '책을 누르면 목록에서 삭제하거나 리뷰를 남길 수 있어요!'
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
 
@@ -153,7 +153,7 @@ class BookListReview(Resource):
                 itemList1['description'] = book_info['author']
                 itemList1['imageUrl'] = book_info['img']
                 itemList1['action'] = 'block'
-                itemList1['blockId'] = blockid.view_review
+                itemList1['blockId'] = blockid.edit_menu
                 extra = {'isbn': book_info['isbn']}
                 itemList1['extra'] = extra
                 itemLists.append(itemList1)
@@ -179,7 +179,7 @@ class BookListReview(Resource):
                 itemLists = []
 
             carousel_listCard['carousel']['items'] = listItems
-            simpleText['simpleText']['text'] = '책을 누르면 내가 남긴 평점과 리뷰를 볼 수 있어요!'
+            simpleText['simpleText']['text'] = '책을 누르면 삭제하거나 남긴 리뷰를 볼 수 있어요!'
             outputs = [simpleText, carousel_listCard]
             responseBody['template']['outputs'] = outputs
 
