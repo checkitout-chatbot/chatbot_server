@@ -275,7 +275,7 @@ class SaveMenu(Resource):
     parser.add_argument('userRequest', type=dict, required=True)
 
     def post(self):
-        data = SaveWanted.parser.parse_args()
+        data = SaveMenu.parser.parse_args()
         log.info_log(data)
 
         isbn = data['action']['clientExtra']['isbn']
@@ -311,6 +311,99 @@ class SaveMenu(Resource):
         quickReply3['blockId'] = blockid.save_review
         quickReply3['extra']['isbn'] = isbn
         quickReplies.append(quickReply3)
+        responseBody['template']['quickReplies'] = quickReplies
+
+        return responseBody
+
+
+class EditMenu(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('action', type=dict, required=True)
+    parser.add_argument('userRequest', type=dict, required=True)
+
+    def post(self):
+        data = EditMenu.parser.parse_args()
+        log.info_log(data)
+
+        isbn = data['action']['clientExtra']['isbn']
+
+        response = Response()
+        blockid = BlockID()
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+        quickReply = response.quickReply
+
+        # 리스트에 등록된 책인지 확인
+        simpleText['simpleText']['text'] = '이 책을 어떻게 할까요?'
+        outputs = [simpleText]
+        responseBody['template']['outputs'] = outputs
+
+        quickReplies = []
+        quickReply1 = deepcopy(quickReply)
+        quickReply1['action'] = 'block'
+        quickReply1['label'] = '뒤로가기'
+        quickReply1['blockId'] = blockid.list_menu
+        quickReplies.append(quickReply1)
+
+        quickReply2 = deepcopy(quickReply)
+        quickReply2['action'] = 'block'
+        quickReply2['label'] = '삭제하기'
+        quickReply2['blockId'] = blockid.delete_book
+        quickReply2['extra']['isbn'] = isbn
+        quickReplies.append(quickReply2)
+
+        quickReply3 = deepcopy(quickReply)
+        quickReply3['action'] = 'block'
+        quickReply3['label'] = '리뷰(수정)하기'
+        quickReply3['blockId'] = blockid.save_review
+        quickReply3['extra']['isbn'] = isbn
+        quickReplies.append(quickReply3)
+        responseBody['template']['quickReplies'] = quickReplies
+
+        return responseBody
+
+
+class DeleteBook(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('action', type=dict, required=True)
+    parser.add_argument('userRequest', type=dict, required=True)
+
+    def post(self):
+        data = SaveReview.parser.parse_args()
+        log.info_log(data)
+
+        # 신규유저면 DB에 저장
+        user_id = data['userRequest']['user']['id']
+        UserRegister.check_id(user_id, user_id)
+
+        isbn = data['action']['clientExtra']['isbn']
+
+        response = Response()
+        blockid = BlockID()
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+        quickReply = response.quickReply
+
+        booklist = BookListModel.find_by_status(isbn, user_id)
+        booklist.delete_from_db()
+
+        simpleText['simpleText']['text'] = '해당 책을 삭제했습니다.'
+        outputs = [simpleText]
+        responseBody['template']['outputs'] = outputs
+
+        quickReplies = []
+        quickReply1 = deepcopy(quickReply)
+        quickReply1['action'] = 'block'
+        quickReply1['label'] = '뒤로가기'
+        quickReply1['blockId'] = blockid.list_menu
+        quickReplies.append(quickReply1)
+
+        quickReply2 = deepcopy(quickReply)
+        quickReply2['action'] = 'block'
+        quickReply2['label'] = '도움말'
+        quickReply2['blockId'] = blockid.howto
+        quickReplies.append(quickReply2)
+
         responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
