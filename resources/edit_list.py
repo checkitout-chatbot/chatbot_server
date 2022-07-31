@@ -189,10 +189,11 @@ class ViewReview(Resource):
         quickReply = response.quickReply
 
         # 리스트에 등록된 책인지 확인
-        book_review = BookListModel.find_by_status_isbn(
-            isbn, user_id, 1).json()
-
-        simpleText['simpleText']['text'] = f"평점: {book_review['rate']}\n리뷰: {book_review['review']}"
+        book_review = BookListModel.find_by_book(isbn, user_id).json()
+        if book_review['status'] == 0:
+            simpleText['simpleText']['text'] = "아직 남긴 평점이 없습니다. 평점을 남겨 보세요!"
+        else:
+            simpleText['simpleText']['text'] = f"평점: {book_review['rate']}\n리뷰: {book_review['review']}"
         outputs = [simpleText]
         responseBody['template']['outputs'] = outputs
 
