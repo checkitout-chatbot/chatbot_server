@@ -41,7 +41,7 @@ class Today(Resource):  # 오늘의 추천
 
         itemList3 = deepcopy(itemList)
         itemList3['title'] = '출판일'
-        itemList3['description'] = book['pubDate']
+        itemList3['description'] = str(book['pubDate'])
         itemLists.append(itemList3)
         itemCard['itemCard']['itemList'] = itemLists
 
@@ -139,7 +139,7 @@ class Similar(Resource):  # 비슷한 책 추천
 
                 itemList3 = deepcopy(itemList)
                 itemList3['title'] = '출판일'
-                itemList3['description'] = book['pubDate']
+                itemList3['description'] = str(book['pubDate'])
                 itemLists.append(itemList3)
                 item1['itemList'] = itemLists
 

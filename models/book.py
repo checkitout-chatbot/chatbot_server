@@ -57,6 +57,11 @@ class BookModel(db.Model):
     def find_by_bestseller(cls):
         return cls.query.filter_by(bestseller=1).all()
 
+    @classmethod
+    def find_by_keyword(cls, keyword):
+        keyword = f'%{keyword}%'
+        return cls.query.filter((BookModel.title.like(keyword)) | (BookModel.author.like(keyword)) | (BookModel.summary.like(keyword))).all()
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -64,3 +69,8 @@ class BookModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
+
+
+if __name__ == '__main__':
+    book = BookModel.find_by_keyword('정의란')
+    print(book)
