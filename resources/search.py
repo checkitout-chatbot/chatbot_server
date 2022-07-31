@@ -81,12 +81,14 @@ class Barcode(Resource):
                 authors = ", ".join(book['authors'])
             else:
                 authors = book['authors'][0]
-            book = BookModel(barcode, book['title'], authors, book['publisher'],
-                             book['contents'], book['thumbnail'], None, None, None, None, pubDate)
+            book = BookModel(isbn=barcode, title=book['title'], author=authors, publisher=book['publisher'],
+                             summary=book['contents'], img=book['thumbnail'], pubDate=pubDate,
+                             genre=None, rate=None, bestseller=None, similarity=None)
             book.save_to_db()
 
         book = book.json()
 
+        log.info_log(book)
         blockid = BlockID()
         itemList = response.itemList
         button = response.button
@@ -182,12 +184,13 @@ class Keyword(Resource):
                 if check_book == None:
                     pubDate = book['datetime'].split('T')[0]
                     pubDate = datetime.strptime(pubDate, '%Y-%m-%d').date()
-                    if len(book['authors']) > 1:
+                    if len(book['authors']) > 1:  # 작가가 여려명일 때
                         authors = ", ".join(book['authors'])
                     else:
                         authors = book['authors'][0]
-                    book = BookModel(isbn, book['title'], authors, book['publisher'],
-                                     book['contents'], book['thumbnail'], None, None, None, None, book['pubDate'])
+                    book = BookModel(isbn=isbn, title=book['title'], author=authors, publisher=book['publisher'],
+                                     summary=book['contents'], img=book['thumbnail'], pubDate=pubDate,
+                                     genre=None, rate=None, bestseller=None, similarity=None)
                     book.save_to_db()
                     book = book.json()
                 else:
