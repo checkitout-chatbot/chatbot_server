@@ -6,7 +6,6 @@ from flask_jwt import JWT
 
 from security import authenticate, identity
 from resources.user import UserRegister
-from resources.book import Book
 from resources.book_list import BookListWant, BookListReview
 from resources.recommend import Today, Similar, Sense, Social
 from resources.search import Barcode, Keyword
@@ -26,7 +25,6 @@ api = Api(app)
 jwt = JWT(app, authenticate, identity)  # /auth
 
 api.add_resource(UserRegister, '/register')
-api.add_resource(Book, '/book/<string:isbn>')
 
 # 책 추천 방식
 # today, similar, sense(알잘딱깔센), social

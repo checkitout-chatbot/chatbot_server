@@ -6,6 +6,7 @@ import requests
 import json
 from hanspell import spell_checker
 import log
+from datetime import datetime
 
 
 class Searching:
@@ -74,12 +75,14 @@ class Barcode(Resource):
         if book == None:
             search = Searching()
             book = search.get_book(barcode)
+            pubDate = book['datetime'].split('T')[0]
+            pubDate = datetime.strptime(pubDate, '%Y-%m-%d').date()
             if len(book['authors']) > 1:
                 authors = ", ".join(book['authors'])
             else:
                 authors = book['authors'][0]
             book = BookModel(barcode, book['title'], authors, book['publisher'],
-                             book['contents'], book['thumbnail'], None, None, None, None)
+                             book['contents'], book['thumbnail'], None, None, None, None, pubDate)
             book.save_to_db()
 
         book = book.json()
@@ -170,84 +173,94 @@ class Keyword(Resource):
         simpleText = response.simpleText
         responseBody = response.responseBody
 
-        items = []
-        for book in books:
-            isbn = book['isbn'].split()[1]
-            check_book = BookModel.find_by_isbn(isbn)
-            # books 테이블에 해당 책 없으면 저장
-            if check_book == None:
-                if len(book['authors']) > 1:
-                    authors = ", ".join(book['authors'])
+        try:
+            items = []
+            for book in books:
+                isbn = book['isbn'].split()[1]
+                check_book = BookModel.find_by_isbn(isbn)
+                # books 테이블에 해당 책 없으면 저장
+                if check_book == None:
+                    pubDate = book['datetime'].split('T')[0]
+                    pubDate = datetime.strptime(pubDate, '%Y-%m-%d').date()
+                    if len(book['authors']) > 1:
+                        authors = ", ".join(book['authors'])
+                    else:
+                        authors = book['authors'][0]
+                    book = BookModel(isbn, book['title'], authors, book['publisher'],
+                                     book['contents'], book['thumbnail'], None, None, None, None, book['pubDate'])
+                    book.save_to_db()
+                    book = book.json()
                 else:
-                    authors = book['authors'][0]
-                book = BookModel(isbn, book['title'], authors, book['publisher'],
-                                 book['contents'], book['thumbnail'], None, None, None, None)
-                book.save_to_db()
-                book = book.json()
-            else:
-                book = check_book.json()
+                    book = check_book.json()
 
-            item1 = deepcopy(item)
-            item1['imageTitle']['title'] = book['title']
-            item1['imageTitle']['imageUrl'] = book['img']
+                log.info_log(book)
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = book['title']
+                item1['imageTitle']['imageUrl'] = book['img']
 
-            itemLists = []
-            itemList1 = deepcopy(itemList)
-            itemList1['title'] = '지은이'
-            itemList1['description'] = book['author']
-            itemLists.append(itemList1)
+                itemLists = []
+                itemList1 = deepcopy(itemList)
+                itemList1['title'] = '지은이'
+                itemList1['description'] = book['author']
+                itemLists.append(itemList1)
 
-            itemList2 = deepcopy(itemList)
-            itemList2['title'] = '출판사'
-            itemList2['description'] = book['publisher']
-            itemLists.append(itemList2)
+                itemList2 = deepcopy(itemList)
+                itemList2['title'] = '출판사'
+                itemList2['description'] = book['publisher']
+                itemLists.append(itemList2)
 
-            itemList3 = deepcopy(itemList)
-            itemList3['title'] = '장르'
-            itemList3['description'] = book['genre']
-            itemLists.append(itemList3)
-            item1['itemList'] = itemLists
+                itemList3 = deepcopy(itemList)
+                itemList3['title'] = '장르'
+                itemList3['description'] = book['genre']
+                itemLists.append(itemList3)
+                item1['itemList'] = itemLists
 
-            buttons = []
-            button1 = deepcopy(button)
-            button1['action'] = 'webLink'
-            button1['label'] = '책 정보'
-            kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
-            button1['webLinkUrl'] = kyobo_url
-            buttons.append(button1)
+                buttons = []
+                button1 = deepcopy(button)
+                button1['action'] = 'webLink'
+                button1['label'] = '책 정보'
+                kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+                button1['webLinkUrl'] = kyobo_url
+                buttons.append(button1)
 
-            button2 = deepcopy(button)
-            button2['action'] = 'block'
-            button2['label'] = '책 저장'
-            button2['blockId'] = blockid.save_menu
-            button2['extra']['isbn'] = book['isbn']
-            buttons.append(button2)
-            item1['buttons'] = buttons
+                button2 = deepcopy(button)
+                button2['action'] = 'block'
+                button2['label'] = '책 저장'
+                button2['blockId'] = blockid.save_menu
+                button2['extra']['isbn'] = book['isbn']
+                buttons.append(button2)
+                item1['buttons'] = buttons
 
-            items.append(item1)
+                items.append(item1)
 
-        carousel_itemCard['carousel']['items'] = items
-        simpleText['simpleText']['text'] = '이 중에 찾으시는 책이 있을까요??'
+            carousel_itemCard['carousel']['items'] = items
+            simpleText['simpleText']['text'] = '이 중에 찾으시는 책이 있을까요??'
 
-        outputs = [simpleText, carousel_itemCard]
-        responseBody['template']['outputs'] = outputs
+            outputs = [simpleText, carousel_itemCard]
+            responseBody['template']['outputs'] = outputs
 
-        quickReplies = []
-        quickReply = response.quickReply
+            quickReplies = []
+            quickReply = response.quickReply
 
-        quickReply1 = deepcopy(quickReply)
-        quickReply1['action'] = 'block'
-        quickReply1['label'] = '뒤로가기'
-        quickReply1['blockId'] = blockid.search_menu
-        quickReplies.append(quickReply1)
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.search_menu
+            quickReplies.append(quickReply1)
 
-        quickReply2 = deepcopy(quickReply)
-        quickReply2['action'] = 'block'
-        quickReply2['label'] = '도움말'
-        quickReply2['blockId'] = blockid.howto
-        quickReplies.append(quickReply2)
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
 
-        responseBody['template']['quickReplies'] = quickReplies
+            responseBody['template']['quickReplies'] = quickReplies
+
+        except Exception as e:
+            log.error_log(e)
+            simpleText['simpleText']['text'] = '죄송합니다. 찾는 책이 없습니다 :('
+            outputs = [simpleText]
+            responseBody['template']['outputs'] = outputs
 
         return responseBody
 

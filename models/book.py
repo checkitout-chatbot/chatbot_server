@@ -14,10 +14,11 @@ class BookModel(db.Model):
     rate = db.Column(db.Float(precision=1))
     bestseller = db.Column(db.Integer)
     similarity = db.Column(db.String(255))
+    pubDate = db.Column(db.Date)
 
     book_list = db.relationship('BookListModel', lazy='dynamic')
 
-    def __init__(self, isbn, title, author, publisher, summary, img, genre, rate, bestseller, similarity):
+    def __init__(self, isbn, title, author, publisher, summary, img, genre, rate, bestseller, similarity, pubDate):
         self.isbn = isbn
         self.title = title
         self.author = author
@@ -28,12 +29,13 @@ class BookModel(db.Model):
         self.rate = rate
         self.bestseller = bestseller
         self.similarity = similarity
+        self.pubDate = pubDate
 
     def json(self):
         return {'isbn': self.isbn, 'title': self.title, 'author': self.author,
                 'publisher': self.publisher, 'summary': self.summary,
                 'img': self.img, 'genre': self.genre, 'rate': self.rate,
-                'bestseller': self.bestseller, 'similarity': self.similarity}
+                'bestseller': self.bestseller, 'similarity': self.similarity, 'pubDate': self.pubDate}
 
     @classmethod
     def find_by_isbn(cls, isbn):
