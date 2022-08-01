@@ -62,7 +62,7 @@ class BookListWant(Resource):
 
             # for문에서는 5로 나눠질 때만 리스트를 만들기 때문에 추가 리스트 필요
             # 5 번째 리스트에서는 추가 필요x / 딱 맞을 때도 필요x
-            if cnt < 21 and cnt % 5 != 0:
+            if cnt < 25 and cnt % 5 != 0:
                 listItem1 = deepcopy(listItem)
                 listItem1['items'] = itemLists
                 listItem1['header']['title'] = f'읽고 싶은 책 목록'
@@ -171,7 +171,7 @@ class BookListReview(Resource):
 
             # for문에서는 5로 나눠질 때만 리스트를 만들기 때문에 추가 리스트 필요
             # 5 번째 리스트에서는 추가 필요x / 딱 맞을 때도 필요x
-            if cnt < 21 and cnt % 5 != 0:
+            if cnt < 25 and cnt % 5 != 0:
                 listItem1 = deepcopy(listItem)
                 listItem1['items'] = itemLists
                 listItem1['header']['title'] = f'읽은 책 목록'
