@@ -54,8 +54,8 @@ class BookModel(db.Model):
         return cls.query.filter_by(genre=genre).first()
 
     @classmethod
-    def find_by_bestseller(cls):
-        return cls.query.filter_by(bestseller=1).all()
+    def find_by_bestseller(cls, bestseller):
+        return cls.query.filter_by(bestseller=bestseller).first()
 
     @classmethod
     def find_by_keyword(cls, keyword):

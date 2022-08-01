@@ -1,10 +1,10 @@
 from copy import deepcopy
-import random
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from resources.search import Searching
 from resources.response import Response, BlockID
 import log
+from datetime import datetime
 
 
 class Today(Resource):  # 오늘의 추천
@@ -14,10 +14,26 @@ class Today(Resource):  # 오늘의 추천
         data = Today.parser.parse_args()
         log.info_log(data)
 
-        # bestseller 목록 전체 가져와서 랜덤으로 한 권 뽑기
-        books = BookModel.find_by_bestseller()
-        randint = random.randint(0, len(books))
-        book = books[randint].json()
+        now = datetime.now()
+        # 매달 1일에 베스트셀러 갱신하여 1부터 31까지 저장
+        # 그 날짜에 해당하는 책 추천
+        if now.day == 1 and now.hour < 9:
+            search = Searching()
+            books = search.search_list("Bestseller", 31)
+            for i in books.keys():
+                check_book = BookModel.find_by_isbn(books[i]['isbn'])
+                if check_book == None:
+                    pubDate = datetime.strptime(
+                        books[i]['pubDate'], '%Y-%m-%d').date()
+                    check_book = BookModel(isbn=books[i]['isbn'], title=books[i]['title'], author=books[i]['author'], publisher=books[i]['publisher'],
+                                           summary=books[i]['summary'], img=books[i]['img'], pubDate=pubDate,
+                                           genre=books[i]['genre'], rate=books[i]['rate'], bestseller=i+1, similarity=None)
+                    check_book.save_to_db()
+                else:
+                    check_book.bestseller = i+1
+                    check_book.save_to_db()
+
+        book = BookModel.find_by_bestseller(now.day).json()
 
         blockid = BlockID()
         response = Response()
@@ -109,19 +125,13 @@ class Similar(Resource):  # 비슷한 책 추천
             # kakao 책 검색으로 제목입력하여 ISBN 추출
             input_title = data['action']['params']['title']
             search = Searching()
-            input_books = search.get_book(input_title)
+            input_books = search.search_keywords(input_title, 30)
 
             # doc2vec으로 구한 유사도 가져오기
             # 유사도가 있는 책이 나올 때까지 검색
             similar_books = []
-            for input_book in input_books:
-                isbn = input_book['isbn'].split()
-                if len(isbn) == 2:
-                    isbn = isbn[1]
-                else:
-                    isbn = isbn[0]
-                book = BookModel.find_by_isbn(isbn).json()
-                log.info_log(book)
+            for i in input_books.keys():
+                book = BookModel.find_by_isbn(input_books[i]['isbn']).json()
                 if book['similarity'] != None:
                     similar_books = book['similarity'].split(",")
                     break
