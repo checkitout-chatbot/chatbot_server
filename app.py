@@ -30,7 +30,10 @@ api.add_resource(UserRegister, '/register')
 # today, similar, sense(알잘딱깔센), social
 api.add_resource(Today, '/recommend/today')
 api.add_resource(Similar, '/recommend/similar')
-api.add_resource(Sense, '/recommend/sense')
+api.add_resource(Sense, '/recommend/sense_killingtime')
+api.add_resource(Sense, '/recommend/sence_healing')
+api.add_resource(Sense, '/recommend/sence_love')
+api.add_resource(Sense, '/recommend/sence_improvement')
 api.add_resource(Social, '/recommend/social')
 
 # 저장한 책 리스트 확인
