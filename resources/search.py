@@ -12,22 +12,49 @@ import os
 
 class Searching:
     def __init__(self):
-        self.REST_API_KEY = os.environ.get('KAKAO_API_KEY', 'q1111')
-        self.url = "https://dapi.kakao.com/v3/search/book"
+        self.key = os.environ.get('ALADIN_KEY', 'q1111')
 
-    def get_book(self, query):
-        queryString = {"query": query}
-        header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
-        r = requests.get(self.url, headers=header, params=queryString)
-        books = json.loads(r.text)['documents']
-        if len(books) == 0:
+    def json_to_dict(self, url, informs):
+        cnt = 0
+        try:
+            # request 보내기
+            response = requests.get(url)
+            # 받은 response를 json 타입으로 바뀌주기
+            contents = json.loads(response.text)
+            for content in contents["item"]:
+                isbn = content["isbn13"]
+                title = content["title"]
+                author = content["author"]
+                publisher = content["publisher"]
+                summary = content["description"]
+                img = content["cover"]
+                genre = content["categoryName"].split('>')[1]
+                rate = content["customerReviewRank"]
+                pubDate = content["pubDate"]
+                inform = {'isbn': isbn, 'title': title, 'author': author, 'publisher': publisher,
+                          'summary': summary, 'img': img, 'genre': genre, 'rate': rate, 'pubDate': pubDate}
+                informs[cnt] = inform
+                cnt += 1
+        except Exception as e:
+            log.error_log(e)
+        return informs
+
+    def search_keywords(self, query, num=10):
+        url = f"http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey={self.key}&Query={query}&QueryType=Keyword&MaxResults={num}&start=1&SearchTarget=Book&output=js&Version=20131101"
+        informs = {}
+        informs = Searching.json_to_dict(self, url, informs)
+        if len(informs) == 0:
             query = spell_checker.check(query)
             query = query.checked
-            queryString = {"query": query}
-            header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
-            r = requests.get(self.url, headers=header, params=queryString)
-            books = json.loads(r.text)['documents']
-        return books
+            informs = {}
+            informs = Searching.json_to_dict(self, url, informs)
+        return informs
+
+    def search_list(self, item_list='Bestseller', num=31):
+        url = f"http://www.aladin.co.kr/ttb/api/ItemList.aspx?ttbkey={self.key}&QueryType={item_list}&MaxResults={num}&start=1&SearchTarget=Book&output=js&Version=20131101"
+        informs = {}
+        informs = Searching.json_to_dict(self, url, informs)
+        return informs
 
 
 class Barcode(Resource):
@@ -46,19 +73,13 @@ class Barcode(Resource):
         responseBody = response.responseBody
 
         book = BookModel.find_by_isbn(barcode)
-        # 가져온 ISBN의 책이 DB에 없는 경우 카카오 API로 검색하여 저장
         if book == None:
             search = Searching()
-            book = search.get_book(barcode)
-            pubDate = book['datetime'].split('T')[0]
-            pubDate = datetime.strptime(pubDate, '%Y-%m-%d').date()
-            if len(book['authors']) > 1:
-                authors = ", ".join(book['authors'])
-            else:
-                authors = book['authors'][0]
-            book = BookModel(isbn=barcode, title=book['title'], author=authors, publisher=book['publisher'],
-                             summary=book['contents'], img=book['thumbnail'], pubDate=pubDate,
-                             genre=None, rate=None, bestseller=None, similarity=None)
+            book = search.search_keywords(barcode, 1)[0]
+            pubDate = datetime.strptime(book['pubDate'], '%Y-%m-%d').date()
+            book = BookModel(isbn=book['isbn'], title=book['title'], author=book['author'], publisher=book['publisher'],
+                             summary=book['summary'], img=book['img'], pubDate=pubDate,
+                             genre=book['genre'], rate=book['rate'], bestseller=None, similarity=None)
             book.save_to_db()
 
         book = book.json()
@@ -138,7 +159,7 @@ class Keyword(Resource):
 
         keyword = data['action']['params']['keyword']
         search = Searching()
-        books = search.get_book(keyword)
+        books = search.search_keywords(keyword, 10)
 
         blockid = BlockID()
         response = Response()
@@ -151,25 +172,15 @@ class Keyword(Resource):
 
         try:
             items = []
-            for book in books:
-                # isbn 10자리 13자리 2개인 경우 뒤의 13자리로 사용
-                isbn = book['isbn'].split()
-                if len(isbn) == 2:
-                    isbn = isbn[1]
-                else:
-                    isbn = isbn[0]
-                check_book = BookModel.find_by_isbn(isbn)
+            for i in books.keys():
+                check_book = BookModel.find_by_isbn(books[i]['isbn'])
                 # books 테이블에 해당 책 없으면 저장
                 if check_book == None:
-                    pubDate = book['datetime'].split('T')[0]
-                    pubDate = datetime.strptime(pubDate, '%Y-%m-%d').date()
-                    if len(book['authors']) > 1:  # 작가가 여려명일 때
-                        authors = ", ".join(book['authors'])
-                    else:
-                        authors = book['authors'][0]
-                    book = BookModel(isbn=isbn, title=book['title'], author=authors, publisher=book['publisher'],
-                                     summary=book['contents'], img=book['thumbnail'], pubDate=pubDate,
-                                     genre=None, rate=None, bestseller=None, similarity=None)
+                    pubDate = datetime.strptime(
+                        books[i]['pubDate'], '%Y-%m-%d').date()
+                    book = BookModel(isbn=books[i]['isbn'], title=books[i]['title'], author=books[i]['author'], publisher=books[i]['publisher'],
+                                     summary=books[i]['summary'], img=books[i]['img'], pubDate=pubDate,
+                                     genre=books[i]['genre'], rate=books[i]['rate'], bestseller=None, similarity=None)
                     book.save_to_db()
                     book = book.json()
                 else:
@@ -244,26 +255,3 @@ class Keyword(Resource):
             responseBody['template']['outputs'] = outputs
 
         return responseBody
-
-
-if __name__ == '__main__':
-    search = Searching()
-    keyword = '연어'
-
-    #  print('여기는 네이버')
-    #  books = search.get_book_by_naver(keyword)
-    #  for book in books['items']:
-    #      print(book['title'])
-    #      print(book['author'])
-
-    print('여기는 카카오')
-    books = search.get_book(keyword)
-    for book in books:
-        print(book['title'])
-        print(", ".join(book['authors']))
-
-    #  keyword = "맞춤법 틀리면 외 않되? 쓰고싶은대로쓰면돼지 "
-    #  print(search.get_book(keyword))
-    #  print(search.get_book(keyword))
-    #  print(search.get_book(isbn)['authors'])
-    #  print(", ".join(search.get_book(isbn)['authors']))
