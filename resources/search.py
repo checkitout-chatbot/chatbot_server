@@ -7,14 +7,13 @@ import json
 from hanspell import spell_checker
 import log
 from datetime import datetime
+import os
 
 
 class Searching:
     def __init__(self):
-        self.REST_API_KEY = 'c8981be15dbb94247a93cce5e564653b'
+        self.REST_API_KEY = os.environ.get('KAKAO_API_KEY', 'q1111')
         self.url = "https://dapi.kakao.com/v3/search/book"
-        self.ClientID = 'lxpEmdQK9H4_K82OcTP4'
-        self.ClientPW = 'p8veOL4_q7'
 
     def get_book(self, query):
         queryString = {"query": query}
