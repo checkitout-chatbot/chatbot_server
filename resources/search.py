@@ -16,21 +16,6 @@ class Searching:
         self.ClientID = 'lxpEmdQK9H4_K82OcTP4'
         self.ClientPW = 'p8veOL4_q7'
 
-    def get_isbn(self, query):
-        queryString = {"query": query}
-        header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
-        r = requests.get(self.url, headers=header, params=queryString)
-        books = json.loads(r.text)
-        if len(books) == 0:
-            query = spell_checker.check(query)
-            query = query.checked
-            queryString = {"query": query}
-            header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
-            r = requests.get(self.url, headers=header, params=queryString)
-            books = json.loads(r.text)['documents']
-        isbn = books['documents'][0]['isbn'].split()[1]
-        return isbn
-
     def get_book(self, query):
         queryString = {"query": query}
         header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
@@ -43,15 +28,6 @@ class Searching:
             header = {'Authorization': f'KakaoAK {self.REST_API_KEY}'}
             r = requests.get(self.url, headers=header, params=queryString)
             books = json.loads(r.text)['documents']
-        return books
-
-    def get_book_by_naver(self, query):
-        url = 'https://openapi.naver.com/v1/search/book.json'
-        queryString = {"query": query}
-        header = {'X-Naver-Client-Id': self.ClientID,
-                  'X-Naver-Client-Secret': self.ClientPW}
-        r = requests.get(url, headers=header, params=queryString)
-        books = json.loads(r.text)
         return books
 
 
@@ -88,7 +64,6 @@ class Barcode(Resource):
 
         book = book.json()
 
-        log.info_log(book)
         blockid = BlockID()
         itemList = response.itemList
         button = response.button
@@ -178,7 +153,12 @@ class Keyword(Resource):
         try:
             items = []
             for book in books:
-                isbn = book['isbn'].split()[1]
+                # isbn 10자리 13자리 2개인 경우 뒤의 13자리로 사용
+                isbn = book['isbn'].split()
+                if len(isbn) == 2:
+                    isbn = isbn[1]
+                else:
+                    isbn = isbn[0]
                 check_book = BookModel.find_by_isbn(isbn)
                 # books 테이블에 해당 책 없으면 저장
                 if check_book == None:
@@ -196,7 +176,6 @@ class Keyword(Resource):
                 else:
                     book = check_book.json()
 
-                log.info_log(book)
                 item1 = deepcopy(item)
                 item1['imageTitle']['title'] = book['title']
                 item1['imageTitle']['imageUrl'] = book['img']
