@@ -80,7 +80,7 @@ class Today(Resource):  # 오늘의 추천
         itemCard['itemCard']['imageTitle']['title'] = book['title']
         itemCard['itemCard']['imageTitle']['imageUrl'] = book['img']
 
-        simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
+        simpleText['simpleText']['text'] = '요즘엔 이 책이 그렇게 핫 해요🔥'
 
         outputs = [simpleText, itemCard]
         responseBody['template']['outputs'] = outputs
