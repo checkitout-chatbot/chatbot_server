@@ -50,7 +50,7 @@ class Searching:
             informs = Searching.json_to_dict(self, url, informs)
         return informs
 
-    def search_list(self, item_list='Bestseller', num=31):
+    def search_list(self, item_list='Bestseller', num=10):
         url = f"http://www.aladin.co.kr/ttb/api/ItemList.aspx?ttbkey={self.key}&QueryType={item_list}&MaxResults={num}&start=1&SearchTarget=Book&output=js&Version=20131101"
         informs = {}
         informs = Searching.json_to_dict(self, url, informs)

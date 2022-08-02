@@ -15,11 +15,12 @@ class Today(Resource):  # 오늘의 추천
         log.info_log(data)
 
         now = datetime.now()
-        # 매달 1일에 베스트셀러 갱신하여 1부터 31까지 저장
-        # 그 날짜에 해당하는 책 추천
-        if now.day == 1 and now.hour < 9:
+        # 매달 1일에 베스트셀러 갱신하여 0부터 30까지 저장
+        # 그 날짜에 해당하는 책 추천 22800 -> 22년 8월 1번째 베스트셀러
+        date = now.year % 100*1000 + now.month*100
+        if now.day == 1 and BookModel.find_by_bestseller(date) == None:
             search = Searching()
-            books = search.search_list("Bestseller", 31)
+            books = search.search_list("Bestseller", 50)
             for i in books.keys():
                 check_book = BookModel.find_by_isbn(books[i]['isbn'])
                 if check_book == None:
@@ -27,13 +28,13 @@ class Today(Resource):  # 오늘의 추천
                         books[i]['pubDate'], '%Y-%m-%d').date()
                     check_book = BookModel(isbn=books[i]['isbn'], title=books[i]['title'], author=books[i]['author'], publisher=books[i]['publisher'],
                                            summary=books[i]['summary'], img=books[i]['img'], pubDate=pubDate,
-                                           genre=books[i]['genre'], rate=books[i]['rate'], bestseller=i+1, similarity=None)
+                                           genre=books[i]['genre'], rate=books[i]['rate'], bestseller=(date+i), similarity=None)
                     check_book.save_to_db()
                 else:
-                    check_book.bestseller = i+1
+                    check_book.bestseller = date+i
                     check_book.save_to_db()
 
-        book = BookModel.find_by_bestseller(now.day).json()
+        book = BookModel.find_by_bestseller(date+now.day-1).json()
 
         blockid = BlockID()
         response = Response()
