@@ -60,7 +60,7 @@ class BookModel(db.Model):
     @classmethod
     def find_by_keyword(cls, keyword):
         keyword = f'%{keyword}%'
-        return cls.query.filter((BookModel.title.like(keyword)) | (BookModel.author.like(keyword)) | (BookModel.summary.like(keyword))).all()
+        return cls.query.filter((BookModel.title.like(keyword)) | (BookModel.author.like(keyword)) | (BookModel.summary.like(keyword)))
 
     def save_to_db(self):
         db.session.add(self)
