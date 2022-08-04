@@ -257,5 +257,5 @@ cython_debug/
 *.npy
 *.csv
 *.mtx
-hangul_stopwords.txt
+hangul_stopword.txt
 *.bin
