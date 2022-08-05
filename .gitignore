@@ -255,3 +255,8 @@ cython_debug/
 *.swp
 *.doc2vec
 *.npy
+*.csv
+*.mtx
+hangul_stopword.txt
+*.bin
+*.pickle
