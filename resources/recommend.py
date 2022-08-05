@@ -128,14 +128,17 @@ class Similar(Resource):  # 비슷한 책 추천
             search = Searching()
             input_books = search.search_keywords(input_title, 30)
 
-            # doc2vec으로 구한 유사도 가져오기
-            # 유사도가 있는 책이 나올 때까지 검색
+            # lightfm 으로 추천 책 가져오기
+            # 추천 책이 나올 때까지 검색
             similar_books = []
             for i in input_books.keys():
-                book = BookModel.find_by_isbn(input_books[i]['isbn']).json()
-                if book['similarity'] != None:
+                try:
+                    book = BookModel.find_by_isbn(
+                        input_books[i]['isbn']).json()
                     similar_books = book['similarity'].split(",")
                     break
+                except:
+                    pass
 
             # 유사도 isbn값들로 책 찾아 리스트로 저장
             books = [BookModel.find_by_isbn(isbn).json()
