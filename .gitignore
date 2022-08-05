@@ -259,3 +259,4 @@ cython_debug/
 *.mtx
 hangul_stopword.txt
 *.bin
+*.pickle
