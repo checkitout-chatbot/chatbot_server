@@ -141,11 +141,18 @@ class Similar(Resource):  # 비슷한 책 추천
                     pass
 
             # 유사도 isbn값들로 책 찾아 리스트로 저장
-            books = [BookModel.find_by_isbn(isbn).json()
-                     for isbn in similar_books]
+            books = []
+            for i, isbn in enumerate(similar_books):
+                if i == 0:
+                    continue
+                else:
+                    try:
+                        books.append(BookModel.find_by_isbn(isbn).json())
+                    except:
+                        pass
 
             items = []
-            for book in books:
+            for i, book in enumerate(books):
                 item1 = deepcopy(item)
                 item1['imageTitle']['title'] = book['title']
                 item1['imageTitle']['imageUrl'] = book['img']
@@ -184,6 +191,9 @@ class Similar(Resource):  # 비슷한 책 추천
                 item1['buttons'] = buttons
 
                 items.append(item1)
+
+                if i == 4:
+                    break
 
             carousel_itemCard['carousel']['items'] = items
             simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
