@@ -2,7 +2,7 @@ from db import db
 
 
 class BookListModel(db.Model):
-    __tablename__ = 'book_list_c'
+    __tablename__ = 'book_list'
 
     user_id = db.Column(db.Integer, db.ForeignKey(
         'users.id'), primary_key=True)
