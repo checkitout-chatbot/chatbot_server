@@ -78,8 +78,7 @@ class Barcode(Resource):
             book = search.search_keywords(barcode, 1)[0]
             pubDate = datetime.strptime(book['pubDate'], '%Y-%m-%d').date()
             book = BookModel(isbn=book['isbn'], title=book['title'], author=book['author'], publisher=book['publisher'],
-                             summary=book['summary'], img=book['img'], pubDate=pubDate,
-                             genre=book['genre'], rate=book['rate'], bestseller=None, similarity=None)
+                             pubDate=pubDate, summary=book['summary'], img=book['img'], genre=book['genre'], rate=book['rate'])
             book.save_to_db()
 
         book = book.json()
@@ -118,7 +117,7 @@ class Barcode(Resource):
         button2['action'] = 'block'
         button2['label'] = '책 저장'
         button2['blockId'] = blockid.save_menu
-        button2['extra']['isbn'] = book['isbn']
+        button2['extra']['book_id'] = book['id']
         buttons.append(button2)
 
         itemCard['itemCard']['buttons'] = buttons
@@ -179,8 +178,7 @@ class Keyword(Resource):
                     pubDate = datetime.strptime(
                         books[i]['pubDate'], '%Y-%m-%d').date()
                     book = BookModel(isbn=books[i]['isbn'], title=books[i]['title'], author=books[i]['author'], publisher=books[i]['publisher'],
-                                     summary=books[i]['summary'], img=books[i]['img'], pubDate=pubDate,
-                                     genre=books[i]['genre'], rate=books[i]['rate'], bestseller=None, similarity=None)
+                                     pubDate=pubDate, summary=books[i]['summary'], img=books[i]['img'], genre=books[i]['genre'], rate=books[i]['rate'])
                     book.save_to_db()
                     book = book.json()
                 else:
@@ -219,7 +217,7 @@ class Keyword(Resource):
                 button2['action'] = 'block'
                 button2['label'] = '책 저장'
                 button2['blockId'] = blockid.save_menu
-                button2['extra']['isbn'] = book['isbn']
+                button2['extra']['book_id'] = book['id']
                 buttons.append(button2)
                 item1['buttons'] = buttons
 

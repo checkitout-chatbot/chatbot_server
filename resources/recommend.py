@@ -27,8 +27,7 @@ class Today(Resource):  # 오늘의 추천
                     pubDate = datetime.strptime(
                         books[i]['pubDate'], '%Y-%m-%d').date()
                     check_book = BookModel(isbn=books[i]['isbn'], title=books[i]['title'], author=books[i]['author'], publisher=books[i]['publisher'],
-                                           summary=books[i]['summary'], img=books[i]['img'], pubDate=pubDate,
-                                           genre=books[i]['genre'], rate=books[i]['rate'], bestseller=(date+i), similarity=None)
+                                           pubDate=pubDate, summary=books[i]['summary'], img=books[i]['img'], genre=books[i]['genre'], rate=books[i]['rate'], bestseller=(date+i))
                     check_book.save_to_db()
                 else:
                     check_book.bestseller = date+i
@@ -73,7 +72,7 @@ class Today(Resource):  # 오늘의 추천
         button2['action'] = 'block'
         button2['label'] = '책 저장'
         button2['blockId'] = blockid.save_menu
-        button2['extra']['isbn'] = book['isbn']
+        button2['extra']['book_id'] = book['id']
         buttons.append(button2)
 
         itemCard['itemCard']['buttons'] = buttons
@@ -186,7 +185,7 @@ class Similar(Resource):  # 비슷한 책 추천
                 button2['action'] = 'block'
                 button2['label'] = '책 저장'
                 button2['blockId'] = blockid.save_menu
-                button2['extra']['isbn'] = book['isbn']
+                button2['extra']['book_id'] = book['id']
                 buttons.append(button2)
                 item1['buttons'] = buttons
 

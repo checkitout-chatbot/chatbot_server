@@ -1,11 +1,11 @@
 from copy import deepcopy
 from flask_restful import Resource, reqparse
 from models.book import BookModel
+from models.user import UserModel
 from models.book_list import BookListModel
 from resources.user import UserRegister
 from resources.response import Response, BlockID
 import log
-# 읽고 싶은 책 리스트 보기
 
 
 class BookListWant(Resource):
@@ -13,12 +13,16 @@ class BookListWant(Resource):
     parser.add_argument('userRequest', type=dict, required=True)
 
     def post(self):
+        """
+        읽고 싶은 책 리스트 출력
+        """
         data = BookListWant.parser.parse_args()
         log.info_log(data)
 
         # 신규유저면 DB에 저장
-        user_id = data['userRequest']['user']['id']
-        UserRegister.check_id(user_id, user_id)
+        username = data['userRequest']['user']['id']
+        UserRegister.check_id(username=username)
+        user_id = UserModel.find_by_username(username).json()['id']
 
         response = Response()
         blockid = BlockID()
@@ -31,22 +35,23 @@ class BookListWant(Resource):
         listItems = []
         itemLists = []
 
-        # 저장한 책이 존재하면
+        # 저장한 책이 존재하는지 확인
         books = BookListModel.find_by_status(user_id, 0)
         cnt = 0
         if books:
             for book in books:
                 cnt += 1
 
-                book_info = BookModel.find_by_isbn(book.json()['isbn']).json()
+                # book_list 테이블에서 book_id로 books 테이블의 책 데이터를 가져오기
+                book_info = BookModel.find_by_id(book.json()['book_id']).json()
                 itemList1 = deepcopy(itemList)
                 itemList1['title'] = book_info['title']
                 itemList1['description'] = book_info['author']
                 itemList1['imageUrl'] = book_info['img']
                 itemList1['action'] = 'block'
                 itemList1['blockId'] = blockid.edit_menu
-                extra = {'isbn': book_info['isbn']}
-                itemList1['extra'] = extra
+                # 해당 item을 누르면 book_id 넘기기
+                itemList1['extra']['book_id'] = book_info['id']
                 itemLists.append(itemList1)
 
                 # 리스트형 아이템 최대 5개까지 출력
@@ -126,8 +131,9 @@ class BookListReview(Resource):
         log.info_log(data)
 
         # 신규유저면 DB에 저장
-        user_id = data['userRequest']['user']['id']
-        UserRegister.check_id(user_id, user_id)
+        username = data['userRequest']['user']['id']
+        UserRegister.check_id(username=username)
+        user_id = UserModel.find_by_username(username).json()['id']
 
         response = Response()
         blockid = BlockID()
@@ -147,15 +153,14 @@ class BookListReview(Resource):
             for book in books:
                 cnt += 1
 
-                book_info = BookModel.find_by_isbn(book.json()['isbn']).json()
+                book_info = BookModel.find_by_id(book.json()['book_id']).json()
                 itemList1 = deepcopy(itemList)
                 itemList1['title'] = book_info['title']
                 itemList1['description'] = book_info['author']
                 itemList1['imageUrl'] = book_info['img']
                 itemList1['action'] = 'block'
                 itemList1['blockId'] = blockid.edit_menu
-                extra = {'isbn': book_info['isbn']}
-                itemList1['extra'] = extra
+                itemList1['extra']['book_id'] = book_info['id']
                 itemLists.append(itemList1)
 
                 # 리스트형 아이템 최대 5개까지 출력
