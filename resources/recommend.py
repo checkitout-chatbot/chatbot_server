@@ -289,7 +289,7 @@ class Social(Resource):  # 소셜 추천
             book_ids = None
             for i, score in enumerate(df[user_id]):
                 if 0 < score < 1:
-                    book_ids = list(df[i:i+5].index)
+                    book_ids = list(df[i:i+10].index)
                     break
 
             if book_ids == None:
