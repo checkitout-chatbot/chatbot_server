@@ -143,16 +143,13 @@ class Similar(Resource):  # 비슷한 책 추천
                 except:
                     pass
 
-            # 유사도 isbn값들로 책 찾아 리스트로 저장
+            # 유사도 id값들로 책 찾아 리스트로 저장
             books = []
-            for i, isbn in enumerate(similar_books):
-                if i == 0:
-                    continue
-                else:
-                    try:
-                        books.append(BookModel.find_by_isbn(isbn).json())
-                    except:
-                        pass
+            for book_id in similar_books:
+                try:
+                    books.append(BookModel.find_by_id(book_id).json())
+                except:
+                    pass
 
             items = []
             for i, book in enumerate(books):
@@ -195,11 +192,11 @@ class Similar(Resource):  # 비슷한 책 추천
 
                 items.append(item1)
 
-                if i == 4:
+                if i == 9:
                     break
 
             carousel_itemCard['carousel']['items'] = items
-            simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
+            simpleText['simpleText']['text'] = '이런 책들을 좋아하실 것 같아요🥰 어떠세요??'
 
             outputs = [simpleText, carousel_itemCard]
             responseBody['template']['outputs'] = outputs
