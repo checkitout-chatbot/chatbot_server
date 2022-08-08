@@ -6,7 +6,7 @@ ICT 도서추천 챗봇
 
 [한이음 팀블로그](https://www.hanium.or.kr/portal/project/teamBlogView.do)
 
-### 팀명: 책읽아웃
+### 팀명: 책잇아웃
 
 - 멘토: 김현진
 - 팀장: 곽유진
