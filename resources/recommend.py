@@ -2,6 +2,7 @@ from copy import deepcopy
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.user import UserModel
+from models.user_similar import UserSimilarModel
 from models.book_list import BookListModel
 from resources.user import UserRegister
 from resources.search import Searching
@@ -271,93 +272,81 @@ class Social(Resource):  # 소셜 추천
         simpleText = response.simpleText
         responseBody = response.responseBody
 
-        check_book_list = BookListModel.find_by_status(user_id, 1)
+        rec_books = UserSimilarModel.find_by_user(user_id)
         # 리스트에 남긴 평점 없으면 추천 안되므로 미리 걸러내기
-        if len(check_book_list) == 0:
-            simpleText['simpleText']['text'] = '아직 남긴 평점이 없습니다. 평점을 남겨 보세요!'
+        if len(rec_books) == 0:
+            simpleText['simpleText']['text'] = '평점을 남긴 책이 부족해요 한 권만 더 남겨주세잇끼!'
             outputs = [simpleText]
             responseBody['template']['outputs'] = outputs
         else:
-            user_id = str(user_id)
-            df = pd.read_csv('data/result_cf.csv', header=0,
-                             index_col=[0], usecols=['book_id', user_id], encoding='utf8')
-            df.sort_values(user_id, ascending=False, inplace=True)
+            items = []
+            for i, rec_book in enumerate(rec_books):
+                book_id = rec_book.json()['book_id']
+                book = BookModel.find_by_id(book_id).json()
 
-            book_ids = None
-            for i, score in enumerate(df[user_id]):
-                if 0 < score < 1:
-                    book_ids = list(df[i:i+10].index)
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = book['title']
+                item1['imageTitle']['imageUrl'] = book['img']
+
+                itemLists = []
+                itemList1 = deepcopy(itemList)
+                itemList1['title'] = '지은이'
+                itemList1['description'] = book['author']
+                itemLists.append(itemList1)
+
+                itemList2 = deepcopy(itemList)
+                itemList2['title'] = '출판사'
+                itemList2['description'] = book['publisher']
+                itemLists.append(itemList2)
+
+                itemList3 = deepcopy(itemList)
+                itemList3['title'] = '출판일'
+                itemList3['description'] = str(book['pubDate'])
+                itemLists.append(itemList3)
+                item1['itemList'] = itemLists
+
+                buttons = []
+                button1 = deepcopy(button)
+                button1['action'] = 'webLink'
+                button1['label'] = '책 정보'
+                kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+                button1['webLinkUrl'] = kyobo_url
+                buttons.append(button1)
+
+                button2 = deepcopy(button)
+                button2['action'] = 'block'
+                button2['label'] = '책 저장'
+                button2['blockId'] = blockid.save_menu
+                button2['extra']['book_id'] = book['id']
+                buttons.append(button2)
+                item1['buttons'] = buttons
+
+                items.append(item1)
+
+                if i == 10:
                     break
 
-            if book_ids == None:
-                simpleText['simpleText']['text'] = '평점이 부족해요 한 권만 더 남겨 주세요!!'
-                outputs = [simpleText]
-                responseBody['template']['outputs'] = outputs
-            else:
-                items = []
-                for book_id in book_ids:
-                    book = BookModel.find_by_id(book_id).json()
+            carousel_itemCard['carousel']['items'] = items
+            simpleText['simpleText']['text'] = '취향을 분석해 봤어요 어때요 잘했나요??'
 
-                    item1 = deepcopy(item)
-                    item1['imageTitle']['title'] = book['title']
-                    item1['imageTitle']['imageUrl'] = book['img']
+            outputs = [simpleText, carousel_itemCard]
+            responseBody['template']['outputs'] = outputs
 
-                    itemLists = []
-                    itemList1 = deepcopy(itemList)
-                    itemList1['title'] = '지은이'
-                    itemList1['description'] = book['author']
-                    itemLists.append(itemList1)
+            quickReplies = []
+            quickReply = response.quickReply
 
-                    itemList2 = deepcopy(itemList)
-                    itemList2['title'] = '출판사'
-                    itemList2['description'] = book['publisher']
-                    itemLists.append(itemList2)
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply1)
 
-                    itemList3 = deepcopy(itemList)
-                    itemList3['title'] = '출판일'
-                    itemList3['description'] = str(book['pubDate'])
-                    itemLists.append(itemList3)
-                    item1['itemList'] = itemLists
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
 
-                    buttons = []
-                    button1 = deepcopy(button)
-                    button1['action'] = 'webLink'
-                    button1['label'] = '책 정보'
-                    kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
-                    button1['webLinkUrl'] = kyobo_url
-                    buttons.append(button1)
-
-                    button2 = deepcopy(button)
-                    button2['action'] = 'block'
-                    button2['label'] = '책 저장'
-                    button2['blockId'] = blockid.save_menu
-                    button2['extra']['book_id'] = book['id']
-                    buttons.append(button2)
-                    item1['buttons'] = buttons
-
-                    items.append(item1)
-
-                carousel_itemCard['carousel']['items'] = items
-                simpleText['simpleText']['text'] = '취향을 분석해 봤어요 어때요 잘했나요??'
-
-                outputs = [simpleText, carousel_itemCard]
-                responseBody['template']['outputs'] = outputs
-
-                quickReplies = []
-                quickReply = response.quickReply
-
-                quickReply1 = deepcopy(quickReply)
-                quickReply1['action'] = 'block'
-                quickReply1['label'] = '뒤로가기'
-                quickReply1['blockId'] = blockid.recom_menu
-                quickReplies.append(quickReply1)
-
-                quickReply2 = deepcopy(quickReply)
-                quickReply2['action'] = 'block'
-                quickReply2['label'] = '도움말'
-                quickReply2['blockId'] = blockid.howto
-                quickReplies.append(quickReply2)
-
-                responseBody['template']['quickReplies'] = quickReplies
+            responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
