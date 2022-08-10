@@ -3,13 +3,12 @@ from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.user import UserModel
 from models.user_similar import UserSimilarModel
-from models.book_list import BookListModel
+from models.book_similar import BookSimilarModel
 from resources.user import UserRegister
 from resources.search import Searching
 from resources.response import Response, BlockID
 import log
 from datetime import datetime
-import pandas as pd
 
 
 class Today(Resource):  # 오늘의 추천
@@ -132,25 +131,25 @@ class Similar(Resource):  # 비슷한 책 추천
             search = Searching()
             input_books = search.search_keywords(input_title, 30)
 
-            # lightfm 으로 추천 책 가져오기
             # 추천 책이 나올 때까지 검색
             similar_books = []
             for i in input_books.keys():
                 try:
                     book = BookModel.find_by_isbn(
                         input_books[i]['isbn']).json()
-                    similar_books = book['similarity'].split(",")
+                    similar_books = BookSimilarModel.find_by_book_id(
+                        book['id'])
                     break
                 except:
                     pass
 
             # 유사도 id값들로 책 찾아 리스트로 저장
             books = []
-            for book_id in similar_books:
-                try:
-                    books.append(BookModel.find_by_id(book_id).json())
-                except:
-                    pass
+            for similar_book in similar_books:
+                similar_book = similar_book.json()
+                books.append(BookModel.find_by_id(
+                    similar_book['book_similar_id']).json())
+            print('찾은 책의 정보', books)
 
             items = []
             for i, book in enumerate(books):
@@ -193,7 +192,7 @@ class Similar(Resource):  # 비슷한 책 추천
 
                 items.append(item1)
 
-                if i == 9:
+                if i == 4:
                     break
 
             carousel_itemCard['carousel']['items'] = items
@@ -221,10 +220,6 @@ class Similar(Resource):  # 비슷한 책 추천
 
         except Exception as e:
             log.error_log(e)
-
-            simpleText['simpleText']['text'] = '비슷한 책을 찾지 못했어요 죄송해요ㅠㅠ'
-            outputs = [simpleText]
-            responseBody['template']['outputs'] = outputs
 
         return responseBody
 
