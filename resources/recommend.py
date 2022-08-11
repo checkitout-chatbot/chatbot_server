@@ -206,18 +206,101 @@ class Similar(Resource):  # 비슷한 책 추천
 
 class Sense(Resource):  # 알잘딱깔센 추천
     parser = reqparse.RequestParser()
-
+    parser.add_argument('action', type=dict)
+    
     def post(self):
-        data = Similar.parser.parse_args()
+        data = Sense.parser.parse_args()
         log.info_log(data)
 
+        blockid = BlockID()
         response = Response()
+        itemList = response.itemList
+        item = response.item
+        button = response.button
+        carousel_itemCard = response.carousel_itemCard
         simpleText = response.simpleText
         responseBody = response.responseBody
+        
 
-        simpleText['simpleText']['text'] = '개발 예정입니다.'
-        outputs = [simpleText]
-        responseBody['template']['outputs'] = outputs
+        try:            
+            # 카테고리별 도서 출력
+            def recommend_sense(self, category):
+                sense_books = BookModel.find_by_SenseCategory(category)
+                for i in range(10):
+                    randint = random.randint(0, len(sense_books))
+                    books = sense_books[randint]
+                return books
+                
+            items = []
+            for book in books:
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = book['title']
+                item1['imageTitle']['imageUrl'] = book['img']
+
+                itemLists = []
+                itemList1 = deepcopy(itemList)
+                itemList1['title'] = '지은이'
+                itemList1['description'] = book['author']
+                itemLists.append(itemList1)
+
+                itemList2 = deepcopy(itemList)
+                itemList2['title'] = '출판사'
+                itemList2['description'] = book['publisher']
+                itemLists.append(itemList2)
+
+                itemList3 = deepcopy(itemList)
+                itemList3['title'] = '출판일'
+                itemList3['description'] = str(book['pubDate'])
+                itemLists.append(itemList3)
+                item1['itemList'] = itemLists
+
+                buttons = []
+                button1 = deepcopy(button)
+                button1['action'] = 'webLink'
+                button1['label'] = '책 정보'
+                kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+                button1['webLinkUrl'] = kyobo_url
+                buttons.append(button1)
+
+                button2 = deepcopy(button)
+                button2['action'] = 'block'
+                button2['label'] = '책 저장'
+                button2['blockId'] = blockid.save_menu
+                button2['extra']['isbn'] = book['isbn']
+                buttons.append(button2)
+                item1['buttons'] = buttons
+
+                items.append(item1)
+
+            carousel_itemCard['carousel']['items'] = items
+            simpleText['simpleText']['text'] = '심사숙고해서 골랐어요!! 어떠세요??'
+
+            outputs = [simpleText, carousel_itemCard]
+            responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply = response.quickReply
+
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            responseBody['template']['quickReplies'] = quickReplies
+
+        except Exception as e:
+            log.error_log(e)
+
+            simpleText['simpleText']['text'] = '오류가 발생했어요. 다시 시도해주세요.'
+            outputs = [simpleText]
+            responseBody['template']['outputs'] = outputs
 
         return responseBody
 

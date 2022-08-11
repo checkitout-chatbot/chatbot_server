@@ -54,6 +54,10 @@ class BookModel(db.Model):
         return cls.query.filter_by(genre=genre).first()
 
     @classmethod
+    def find_by_SenseCategory(cls, sense):
+        return cls.query.filter_by(sense=sense).first()
+
+    @classmethod
     def find_by_bestseller(cls):
         return cls.query.filter_by(bestseller=1).all()
 
@@ -74,3 +78,4 @@ class BookModel(db.Model):
 if __name__ == '__main__':
     book = BookModel.find_by_keyword('정의란')
     print(book)
+

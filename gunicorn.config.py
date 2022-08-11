@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 
 # master 프로세스가 fork하는 worker 프로세스 수
 workers = multiprocessing.cpu_count() * 2 + 1
@@ -10,7 +11,7 @@ wsgi_app = 'run:app'
 reload = True
 
 # port 주소
-bind = '0.0.0.0:5000'
+bind = '127.0.0.1:5000'
 
 # gunicorn access log파일 경로
 accesslog = 'log/itggi_access.log'
