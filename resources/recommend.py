@@ -4,11 +4,13 @@ from models.book import BookModel
 from models.user import UserModel
 from models.user_similar import UserSimilarModel
 from models.book_similar import BookSimilarModel
+from models.book_list import BookListModel
 from resources.user import UserRegister
 from resources.search import Searching
 from resources.response import Response, BlockID
 import log
 from datetime import datetime
+import random
 
 
 class Today(Resource):  # 오늘의 추천
@@ -149,7 +151,6 @@ class Similar(Resource):  # 비슷한 책 추천
                 similar_book = similar_book.json()
                 books.append(BookModel.find_by_id(
                     similar_book['book_similar_id']).json())
-            print('찾은 책의 정보', books)
 
             items = []
             for i, book in enumerate(books):
@@ -267,13 +268,114 @@ class Social(Resource):  # 소셜 추천
         simpleText = response.simpleText
         responseBody = response.responseBody
 
-        rec_books = UserSimilarModel.find_by_user(user_id)
-        # 리스트에 남긴 평점 없으면 추천 안되므로 미리 걸러내기
-        if len(rec_books) == 0:
-            simpleText['simpleText']['text'] = '평점을 남긴 책이 부족해요 한 권만 더 남겨주세잇끼!'
-            outputs = [simpleText]
-            responseBody['template']['outputs'] = outputs
+        # 해당 유저의 읽은 책을 가져옴
+        check_read_list = BookListModel.find_by_status(
+            user_id=user_id, status=1)
+        if len(check_read_list) < 6:  # 평점을 남긴 책이 5권 이하일 경우
+            # 해당 유저의 책 전부를 가져옴
+            check_book_list = BookListModel.find_by_user(user_id=user_id)
+            if len(check_book_list) == 0:  # 저장한 책이 아예 없을 경우
+                simpleText['simpleText']['text'] = '담긴 책이 하나도 없어요! 책을 추천 받아 내 서재에 저장해 보세요!'
+
+                outputs = [simpleText, carousel_itemCard]
+                responseBody['template']['outputs'] = outputs
+
+                quickReplies = []
+                quickReply = response.quickReply
+
+                quickReply1 = deepcopy(quickReply)
+                quickReply1['action'] = 'block'
+                quickReply1['label'] = '뒤로가기'
+                quickReply1['blockId'] = blockid.recom_menu
+                quickReplies.append(quickReply1)
+
+                quickReply2 = deepcopy(quickReply)
+                quickReply2['action'] = 'block'
+                quickReply2['label'] = '도움말'
+                quickReply2['blockId'] = blockid.howto
+                quickReplies.append(quickReply2)
+
+                responseBody['template']['quickReplies'] = quickReplies
+            else:
+                # 저장한 책 중 랜덤으로 한 권 뽑기
+                check_book = check_book_list[random.randint(
+                    0, len(check_book_list)-1)].json()
+                # 뽑은 책과 유사한 책 가져오기
+                rec_books = BookSimilarModel.find_by_book_id(
+                    check_book['book_id'])
+
+                items = []
+                for i, rec_book in enumerate(rec_books):
+                    book_id = rec_book.json()['book_similar_id']
+                    book = BookModel.find_by_id(book_id).json()
+
+                    item1 = deepcopy(item)
+                    item1['imageTitle']['title'] = book['title']
+                    item1['imageTitle']['imageUrl'] = book['img']
+
+                    itemLists = []
+                    itemList1 = deepcopy(itemList)
+                    itemList1['title'] = '지은이'
+                    itemList1['description'] = book['author']
+                    itemLists.append(itemList1)
+
+                    itemList2 = deepcopy(itemList)
+                    itemList2['title'] = '출판사'
+                    itemList2['description'] = book['publisher']
+                    itemLists.append(itemList2)
+
+                    itemList3 = deepcopy(itemList)
+                    itemList3['title'] = '출판일'
+                    itemList3['description'] = str(book['pubDate'])
+                    itemLists.append(itemList3)
+                    item1['itemList'] = itemLists
+
+                    buttons = []
+                    button1 = deepcopy(button)
+                    button1['action'] = 'webLink'
+                    button1['label'] = '책 정보'
+                    kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+                    button1['webLinkUrl'] = kyobo_url
+                    buttons.append(button1)
+
+                    button2 = deepcopy(button)
+                    button2['action'] = 'block'
+                    button2['label'] = '책 저장'
+                    button2['blockId'] = blockid.save_menu
+                    button2['extra']['book_id'] = book['id']
+                    buttons.append(button2)
+                    item1['buttons'] = buttons
+
+                    items.append(item1)
+
+                    if i == 10:
+                        break
+
+                carousel_itemCard['carousel']['items'] = items
+                simpleText['simpleText']['text'] = '취향을 분석해 봤어요 어때요 잘했나요??'
+
+                outputs = [simpleText, carousel_itemCard]
+                responseBody['template']['outputs'] = outputs
+
+                quickReplies = []
+                quickReply = response.quickReply
+
+                quickReply1 = deepcopy(quickReply)
+                quickReply1['action'] = 'block'
+                quickReply1['label'] = '뒤로가기'
+                quickReply1['blockId'] = blockid.recom_menu
+                quickReplies.append(quickReply1)
+
+                quickReply2 = deepcopy(quickReply)
+                quickReply2['action'] = 'block'
+                quickReply2['label'] = '도움말'
+                quickReply2['blockId'] = blockid.howto
+                quickReplies.append(quickReply2)
+
+                responseBody['template']['quickReplies'] = quickReplies
+
         else:
+            rec_books = UserSimilarModel.find_by_user(user_id)
             items = []
             for i, rec_book in enumerate(rec_books):
                 book_id = rec_book.json()['book_id']

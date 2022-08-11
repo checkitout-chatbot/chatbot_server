@@ -35,6 +35,13 @@ class BookListModel(db.Model):
         return cls.query.filter_by(user_id=user_id, status=status).all()
 
     @classmethod
+    def find_by_user(cls, user_id):
+        """
+        user_id에 해당하고 status를 변수로 받아서 해당 상태의 책 전부 찾기
+        """
+        return cls.query.filter_by(user_id=user_id).all()
+
+    @classmethod
     def find_by_status_isbn(cls, user_id, book_id, status):
         return cls.query.filter_by(user_id=user_id, book_id=book_id, status=status).first()
 
