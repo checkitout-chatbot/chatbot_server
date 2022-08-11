@@ -298,8 +298,9 @@ class Social(Resource):  # 소셜 추천
                 responseBody['template']['quickReplies'] = quickReplies
             else:
                 # 저장한 책 중 랜덤으로 한 권 뽑기
-                check_book = check_book_list[random.randint(
-                    0, len(check_book_list)-1)].json()
+                random_num = random.randint(0, len(check_book_list)-1)
+                check_book = check_book_list[random_num].json()
+
                 # 뽑은 책과 유사한 책 가져오기
                 rec_books = BookSimilarModel.find_by_book_id(
                     check_book['book_id'])

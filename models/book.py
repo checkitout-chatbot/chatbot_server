@@ -15,7 +15,6 @@ class BookModel(db.Model):
     genre = db.Column(db.String(80))
     rate = db.Column(db.Float(precision=1))
     bestseller = db.Column(db.Integer)
-    similarity = db.Column(db.String(255))
 
     def __init__(self, isbn, title=None, author=None, publisher=None, pubDate=None, summary=None, img=None, genre=None, rate=None, bestseller=None):
         self.isbn = isbn
@@ -33,7 +32,7 @@ class BookModel(db.Model):
         return {'id': self.id, 'isbn': self.isbn, 'title': self.title, 'author': self.author,
                 'publisher': self.publisher, 'pubDate': self.pubDate, 'summary': self.summary,
                 'img': self.img, 'genre': self.genre, 'rate': self.rate,
-                'bestseller': self.bestseller, 'similarity': self.similarity}
+                'bestseller': self.bestseller}
 
     @classmethod
     def find_by_id(cls, _id):
