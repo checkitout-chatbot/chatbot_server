@@ -1,5 +1,3 @@
-from db import db
-
 #모듈 에러 보완
 if __name__ == '__main__':
 	if __package__ is None:
