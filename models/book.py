@@ -1,5 +1,16 @@
 from db import db
 
+#모듈 에러 보완
+if __name__ == '__main__':
+	if __package__ is None:
+		import sys
+		from os import path
+		print(path.dirname( path.dirname( path.abspath(__file__) ) ))
+		sys.path.append(path.dirname( path.dirname( path.abspath(__file__) ) ))
+		from db import db
+	else:
+		from ..db import db
+
 
 class BookModel(db.Model):
     __tablename__ = 'books'
@@ -75,7 +86,11 @@ class BookModel(db.Model):
         db.session.commit()
 
 
+# if __name__ == '__main__':
+#     book = BookModel.find_by_keyword('정의란')
+#     print(book)
+
 if __name__ == '__main__':
-    book = BookModel.find_by_keyword('정의란')
+    book = BookModel.find_by_SenseCategory('love')
     print(book)
 
