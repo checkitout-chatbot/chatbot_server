@@ -15,8 +15,9 @@ class BookModel(db.Model):
     genre = db.Column(db.String(80))
     rate = db.Column(db.Float(precision=1))
     bestseller = db.Column(db.Integer)
+    sense = db.Column(db.String(20))
 
-    def __init__(self, isbn, title=None, author=None, publisher=None, pubDate=None, summary=None, img=None, genre=None, rate=None, bestseller=None):
+    def __init__(self, isbn, title=None, author=None, publisher=None, pubDate=None, summary=None, img=None, genre=None, rate=None, bestseller=None, sense=None):
         self.isbn = isbn
         self.title = title
         self.author = author
@@ -27,12 +28,13 @@ class BookModel(db.Model):
         self.genre = genre
         self.rate = rate
         self.bestseller = bestseller
+        self.sense = sense
 
     def json(self):
         return {'id': self.id, 'isbn': self.isbn, 'title': self.title, 'author': self.author,
                 'publisher': self.publisher, 'pubDate': self.pubDate, 'summary': self.summary,
                 'img': self.img, 'genre': self.genre, 'rate': self.rate,
-                'bestseller': self.bestseller}
+                'bestseller': self.bestseller, 'sense': self.sense}
 
     @classmethod
     def find_by_id(cls, _id):
