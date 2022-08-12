@@ -14,8 +14,7 @@ app = Flask(__name__)
 
 app.config['DEBUG'] = True
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'sqlite:///data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://chatbot:checkitOut-2022@chatbotdb.c3hrvk4wz2vi.ap-northeast-2.rds.amazonaws.com:3306/test_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_recycle": 250}
 app.secret_key = 'jun'
@@ -27,7 +26,7 @@ jwt = JWT(app, authenticate, identity)  # /auth
 # today, similar, sense(알잘딱깔센), social
 api.add_resource(Today, '/recommend/today')
 api.add_resource(Similar, '/recommend/similar')
-api.add_resource(Sense, '/recommend/sense')
+api.add_resource(Sense, '/recommend/sense/<string:category>')
 api.add_resource(Social, '/recommend/social')
 
 # 저장한 책 리스트 확인
