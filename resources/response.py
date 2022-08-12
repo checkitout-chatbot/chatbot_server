@@ -16,13 +16,14 @@ class Response:
         }
         self.itemList = {
             "title": "",
-            "description": ""
+            "description": "",
+            "extra": {
+            }
         }
         self.button = {
             "label": "",
             "action": "",
             "extra": {
-                "isbn": ""
             }
         }
         self.item = {
@@ -47,7 +48,6 @@ class Response:
             "action": "",
             "label": "",
             "extra": {
-                "isbn": ""
             }
         }
         self.itemCard = {
@@ -100,54 +100,6 @@ class BlockID:
 
 
 if __name__ == "__main__":
-    #  response = Response()
-    #  itemList = response.itemList
-    #  item = response.item
-    #  button = response.button
-    #  carousel_itemCard = response.carousel_itemCard
-    #  simpleText = response.simpleText
-    #  responseBody = response.responseBody
-    #
-    #  itemLists = []
-    #  itemList1 = itemList.copy()
-    #  itemList1['title'] = '지은이'
-    #  itemList1['description'] = '존 브룩스'
-    #  itemLists.append(itemList1)
-    #
-    #  itemList2 = itemList.copy()
-    #  itemList2['title'] = '출판사'
-    #  itemList2['description'] = '쌤앤파커스'
-    #  itemLists.append(itemList2)
-    #  item['itemList'] = itemLists
-    #
-    #  buttons = []
-    #  button1 = button.copy()
-    #  button1['action'] = 'webLink'
-    #  button1['label'] = '책 정보'
-    #  button1['webLinkUrl'] = 'kybo URL'
-    #  buttons.append(button1)
-    #
-    #  button2 = button.copy()
-    #  button2['action'] = 'block'
-    #  button2['label'] = '책 저장'
-    #  button2['blockId'] = '블록 아이디'
-    #  button2['extra']['isbn'] = "98391289381203"
-    #  buttons.append(button2)
-    #  item['buttons'] = buttons
-    #
-    #  items = []
-    #  item1 = item.copy()
-    #  item1['imageTitle']['title'] = '경영의 모험'
-    #  item1['imageTitle']['imageUrl'] = '이미지 주소'
-    #  items.append(item1)
-    #  carousel_itemCard['carousel']['items'] = items
-    #
-    #  simpleText['simpleText']['text'] = '고심해서 고른 책이에요 어떠세요??'
-    #  outputs = [simpleText, carousel_itemCard]
-    #  responseBody['template']['outputs'] = outputs
-    #
-    #  pprint(responseBody, depth=10, indent=2, sort_dicts=False)
-
     response = Response()
     itemList = response.itemList
     listItem = response.listItem

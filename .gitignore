@@ -255,7 +255,3 @@ cython_debug/
 *.swp
 *.doc2vec
 *.npy
-
-
-#API KEY
-.env

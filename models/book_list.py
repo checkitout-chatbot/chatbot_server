@@ -4,37 +4,50 @@ from db import db
 class BookListModel(db.Model):
     __tablename__ = 'book_list'
 
-    isbn = db.Column(db.String(13), db.ForeignKey(
-        'books.isbn'), primary_key=True)
-    username = db.Column(db.String(255), db.ForeignKey(
-        'users.username'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id'), primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey(
+        'books.id'), primary_key=True)
     status = db.Column(db.Integer)
     review = db.Column(db.String(255))
     rate = db.Column(db.Float(precision=1))
+    created_dt = db.Column(db.Date)
+    modified_dt = db.Column(db.Date)
 
-    def __init__(self, isbn, username, status, review, rate):
-        self.isbn = isbn
-        self.username = username
+    def __init__(self, user_id, book_id, status, review=None, rate=None, created_dt=None, modified_dt=None):
+        self.user_id = user_id
+        self.book_id = book_id
         self.status = status
         self.review = review
         self.rate = rate
+        self.created_dt = created_dt
+        self.modified_dt = modified_dt
 
     def json(self):
-        return {'isbn': self.isbn, 'username': self.username, 'status': self.status,
-                'review': self.review, 'rate': self.rate}
-
-    # 해당 유저의 책 리스트 중 상태가 status인 책 전부 찾기
-    @classmethod
-    def find_by_status(cls, username, status):
-        return cls.query.filter_by(username=username, status=status).all()
+        return {'user_id': self.user_id, 'book_id': self.book_id, 'status': self.status,
+                'review': self.review, 'rate': self.rate, 'created_dt': self.created_dt, 'modified_dt': self.modified_dt}
 
     @classmethod
-    def find_by_status_isbn(cls, isbn, username, status):
-        return cls.query.filter_by(isbn=isbn, username=username, status=status).first()
+    def find_by_status(cls, user_id, status):
+        """
+        user_id에 해당하고 status를 변수로 받아서 해당 상태의 책 전부 찾기
+        """
+        return cls.query.filter_by(user_id=user_id, status=status).all()
 
     @classmethod
-    def find_by_book(cls, isbn, username):
-        return cls.query.filter_by(isbn=isbn, username=username).first()
+    def find_by_user(cls, user_id):
+        """
+        user_id에 해당하고 status를 변수로 받아서 해당 상태의 책 전부 찾기
+        """
+        return cls.query.filter_by(user_id=user_id).all()
+
+    @classmethod
+    def find_by_status_isbn(cls, user_id, book_id, status):
+        return cls.query.filter_by(user_id=user_id, book_id=book_id, status=status).first()
+
+    @classmethod
+    def find_by_user_book(cls, user_id, book_id):
+        return cls.query.filter_by(user_id=user_id, book_id=book_id).first()
 
     def save_to_db(self):
         db.session.add(self)

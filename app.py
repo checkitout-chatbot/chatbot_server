@@ -3,7 +3,6 @@ from flask_restful import Api
 from flask_jwt import JWT
 
 from security import authenticate, identity
-from resources.user import UserRegister
 from resources.book_list import BookListWant, BookListReview
 from resources.recommend import Today, Similar, Sense, Social
 from resources.search import Barcode, Keyword
@@ -23,9 +22,6 @@ app.secret_key = 'jun'
 api = Api(app)
 
 jwt = JWT(app, authenticate, identity)  # /auth
-
-from waitress import serve
-serve(app, listen='*:5000')
 
 api.add_resource(UserRegister, '/register')
 

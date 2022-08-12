@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.user import UserModel
 import log
+from datetime import datetime
 
 
 class UserRegister(Resource):
@@ -11,21 +12,15 @@ class UserRegister(Resource):
                         help="user id 입력은 필수입니다."
                         )
 
-    def post(self):
-        data = UserRegister.parser.parse_args()
-        log.info_log(data)
-
-        if UserModel.find_by_username(data['username']):
-            return {"message": "해당 user id는 이미 존재합니다."}, 400
-
-        user = UserModel(data['username'], data['username'])
-        user.save_to_db()
-
-        return {"message": "User가 성공적으로 등록되었습니다."}, 201
-
-    def check_id(self, user_id):
-        checking = UserModel.find_by_username(user_id)
+    @classmethod
+    def check_id(cls, username):
+        """
+        username으로 등록된 유저 찾아서 없으면 저장
+        """
+        now = datetime.now()
+        checking = UserModel.find_by_username(username=username)
         if checking == None:
-            user = UserModel(user_id, user_id)
+            user = UserModel(username=username,
+                             password=username, created_dt=now.date())
             user.save_to_db()
             log.info_log('User가 성공적으로 등록되었습니다.')

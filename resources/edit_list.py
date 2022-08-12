@@ -1,13 +1,18 @@
 from flask_restful import Resource, reqparse
 from models.book_list import BookListModel
+from models.user import UserModel
 from resources.response import Response, BlockID
 from resources.user import UserRegister
 from copy import deepcopy
 import re
 import log
+from datetime import datetime
 
 
 class SaveWanted(Resource):
+    """
+    읽고 싶은 책으로 저장
+    """
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict, required=True)
     parser.add_argument('userRequest', type=dict, required=True)
@@ -17,10 +22,12 @@ class SaveWanted(Resource):
         log.info_log(data)
 
         # 신규유저면 DB에 저장
-        user_id = data['userRequest']['user']['id']
-        UserRegister.check_id(user_id, user_id)
+        username = data['userRequest']['user']['id']
+        UserRegister.check_id(username=username)
+        user_id = UserModel.find_by_username(username).json()['id']
 
-        isbn = data['action']['clientExtra']['isbn']
+        # extra의 책 id 값 받아오기
+        book_id = data['action']['clientExtra']['book_id']
 
         response = Response()
         blockid = BlockID()
@@ -30,7 +37,8 @@ class SaveWanted(Resource):
 
         try:
             # 리스트에 등록된 책인지 확인
-            check_booklist = BookListModel.find_by_book(isbn, user_id)
+            check_booklist = BookListModel.find_by_user_book(
+                user_id=user_id, book_id=book_id)
             if check_booklist != None:
                 simpleText['simpleText']['text'] = '이미 등록된 책입니다.'
                 outputs = [simpleText]
@@ -57,7 +65,9 @@ class SaveWanted(Resource):
                 responseBody['template']['quickReplies'] = quickReplies
 
             else:
-                booklist = BookListModel(isbn, user_id, 0, None, None)
+                now = datetime.now()
+                booklist = BookListModel(
+                    user_id=user_id, book_id=book_id, status=0, created_dt=now.date())
                 booklist.save_to_db()
 
                 simpleText['simpleText']['text'] = '읽고 싶은 책 목록에 책을 저장했습니다.\n즐거운 독서 라이프 되세요~'
@@ -109,6 +119,9 @@ class SaveWanted(Resource):
 
 
 class SaveReview(Resource):
+    """
+    읽은 책 목록으로 저장
+    """
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict, required=True)
     parser.add_argument('userRequest', type=dict, required=True)
@@ -118,10 +131,12 @@ class SaveReview(Resource):
         log.info_log(data)
 
         # 신규유저면 DB에 저장
-        user_id = data['userRequest']['user']['id']
-        UserRegister.check_id(user_id, user_id)
+        username = data['userRequest']['user']['id']
+        UserRegister.check_id(username=username)
+        user_id = UserModel.find_by_username(username).json()['id']
 
-        isbn = data['action']['clientExtra']['isbn']
+        # extra의 책 id 값 받아오기
+        book_id = data['action']['clientExtra']['book_id']
         rate = data['action']['params']['rate']
         rate = re.sub("[^0-9]", "", rate)
         review = data['action']['params']['review']
@@ -132,15 +147,18 @@ class SaveReview(Resource):
         responseBody = response.responseBody
         quickReply = response.quickReply
 
-        booklist = BookListModel.find_by_book(isbn, user_id)
+        now = datetime.now()
+        booklist = BookListModel.find_by_user_book(
+            user_id=user_id, book_id=book_id)
         # 책 목록 있으면 UPDATE 없으면 INSERT
         if booklist:
             booklist.status = 1
             booklist.review = review
             booklist.rate = int(rate)
+            booklist.modified_dt = now.date()
         else:
-            booklist = BookListModel(
-                isbn, user_id, 1, review, int(rate))
+            booklist = BookListModel(user_id=user_id, book_id=book_id, status=1,
+                                     review=review, rate=rate, created_dt=now.date())
         booklist.save_to_db()
 
         simpleText['simpleText']['text'] = '저장을 완료했습니다!'
@@ -171,6 +189,9 @@ class SaveReview(Resource):
 
 
 class ViewReview(Resource):
+    """
+    저장한 리뷰 보기
+    """
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict, required=True)
     parser.add_argument('userRequest', type=dict, required=True)
@@ -179,8 +200,11 @@ class ViewReview(Resource):
         data = ViewReview.parser.parse_args()
         log.info_log(data)
 
-        isbn = data['action']['clientExtra']['isbn']
-        user_id = data['userRequest']['user']['id']
+        username = data['userRequest']['user']['id']
+        user_id = UserModel.find_by_username(username).json()['id']
+
+        # extra의 책 id 값 받아오기
+        book_id = data['action']['clientExtra']['book_id']
 
         response = Response()
         blockid = BlockID()
@@ -189,7 +213,8 @@ class ViewReview(Resource):
         quickReply = response.quickReply
 
         # 리스트에 등록된 책인지 확인
-        book_review = BookListModel.find_by_book(isbn, user_id).json()
+        book_review = BookListModel.find_by_user_book(
+            user_id=user_id, book_id=book_id).json()
         if book_review['status'] == 0:
             simpleText['simpleText']['text'] = "아직 남긴 평점이 없습니다. 평점을 남겨 보세요!"
         else:
@@ -216,6 +241,9 @@ class ViewReview(Resource):
 
 
 class SaveMenu(Resource):
+    """
+    저장 메뉴 출력
+    """
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict, required=True)
     parser.add_argument('userRequest', type=dict, required=True)
@@ -224,7 +252,7 @@ class SaveMenu(Resource):
         data = SaveMenu.parser.parse_args()
         log.info_log(data)
 
-        isbn = data['action']['clientExtra']['isbn']
+        book_id = data['action']['clientExtra']['book_id']
 
         response = Response()
         blockid = BlockID()
@@ -248,14 +276,14 @@ class SaveMenu(Resource):
         quickReply2['action'] = 'block'
         quickReply2['label'] = '🙈 읽고 싶은 책으로'
         quickReply2['blockId'] = blockid.save_want
-        quickReply2['extra']['isbn'] = isbn
+        quickReply2['extra']['book_id'] = book_id
         quickReplies.append(quickReply2)
 
         quickReply3 = deepcopy(quickReply)
         quickReply3['action'] = 'block'
         quickReply3['label'] = '🙉 읽은 책으로'
         quickReply3['blockId'] = blockid.save_review
-        quickReply3['extra']['isbn'] = isbn
+        quickReply3['extra']['book_id'] = book_id
         quickReplies.append(quickReply3)
         responseBody['template']['quickReplies'] = quickReplies
 
@@ -263,6 +291,9 @@ class SaveMenu(Resource):
 
 
 class EditMenu(Resource):
+    """
+    읽고 싶은 책 목록에서 책 item을 누르면 편집할 수 있는 메뉴
+    """
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict, required=True)
     parser.add_argument('userRequest', type=dict, required=True)
@@ -271,7 +302,7 @@ class EditMenu(Resource):
         data = EditMenu.parser.parse_args()
         log.info_log(data)
 
-        isbn = data['action']['clientExtra']['isbn']
+        book_id = data['action']['clientExtra']['book_id']
 
         response = Response()
         blockid = BlockID()
@@ -295,21 +326,21 @@ class EditMenu(Resource):
         quickReply2['action'] = 'block'
         quickReply2['label'] = '삭제하기'
         quickReply2['blockId'] = blockid.delete_book
-        quickReply2['extra']['isbn'] = isbn
+        quickReply2['extra']['book_id'] = book_id
         quickReplies.append(quickReply2)
 
         quickReply3 = deepcopy(quickReply)
         quickReply3['action'] = 'block'
         quickReply3['label'] = '리뷰(수정)하기'
         quickReply3['blockId'] = blockid.save_review
-        quickReply3['extra']['isbn'] = isbn
+        quickReply3['extra']['book_id'] = book_id
         quickReplies.append(quickReply3)
 
         quickReply4 = deepcopy(quickReply)
         quickReply4['action'] = 'block'
         quickReply4['label'] = '리뷰보기'
         quickReply4['blockId'] = blockid.view_review
-        quickReply4['extra']['isbn'] = isbn
+        quickReply4['extra']['book_id'] = book_id
         quickReplies.append(quickReply4)
         responseBody['template']['quickReplies'] = quickReplies
 
@@ -322,14 +353,15 @@ class DeleteBook(Resource):
     parser.add_argument('userRequest', type=dict, required=True)
 
     def post(self):
+        """
+        해당 책 삭제하기
+        """
         data = DeleteBook.parser.parse_args()
         log.info_log(data)
 
-        # 신규유저면 DB에 저장
-        user_id = data['userRequest']['user']['id']
-        UserRegister.check_id(user_id, user_id)
-
-        isbn = data['action']['clientExtra']['isbn']
+        username = data['userRequest']['user']['id']
+        user_id = UserModel.find_by_username(username).json()['id']
+        book_id = data['action']['clientExtra']['book_id']
 
         response = Response()
         blockid = BlockID()
@@ -337,7 +369,8 @@ class DeleteBook(Resource):
         responseBody = response.responseBody
         quickReply = response.quickReply
 
-        booklist = BookListModel.find_by_book(isbn, user_id)
+        booklist = BookListModel.find_by_user_book(
+            user_id=user_id, book_id=book_id)
         booklist.delete_from_db()
 
         simpleText['simpleText']['text'] = '해당 책을 삭제했습니다.'
