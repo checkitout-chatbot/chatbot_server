@@ -259,7 +259,7 @@ class Sense(Resource):  # 알잘딱깔센 추천
         books = []
         #주제별 도서 목록 중 랜덤으로 5개 저장
         for i in range(5):
-            randint = random.randint(0, len(sense_books))
+            randint = random.randint(0, len(sense_books)-1)
             sense_book = sense_books[randint].json()
             books.append(sense_book)
 
