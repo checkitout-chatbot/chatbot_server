@@ -229,10 +229,10 @@ class Sense(Resource):  # 알잘딱깔센 추천
     parser = reqparse.RequestParser()
     parser.add_argument('action', type=dict)
 
-    def post(self, category): #category 변수 추가
+    def post(self, category):  # category 변수 추가
         data = Sense.parser.parse_args()
         log.info_log(data)
-        
+
         blockid = BlockID()
         response = Response()
         itemList = response.itemList
@@ -242,9 +242,8 @@ class Sense(Resource):  # 알잘딱깔센 추천
         simpleText = response.simpleText
         responseBody = response.responseBody
 
-
         sense_books = []
-        #주제별로 도서 목록 다르게 출력
+        # 주제별로 도서 목록 다르게 출력
         if category == 'love':
             sense_books = BookModel.find_by_sense('love')
         elif category == 'killingtime':
@@ -254,17 +253,15 @@ class Sense(Resource):  # 알잘딱깔센 추천
         elif category == 'improvement':
             sense_books = BookModel.find_by_sense('improvement')
 
-        
         sense_book = None
         books = []
-        #주제별 도서 목록 중 랜덤으로 5개 저장
+        # 주제별 도서 목록 중 랜덤으로 5개 저장
         for i in range(5):
             randint = random.randint(0, len(sense_books)-1)
             sense_book = sense_books[randint].json()
             books.append(sense_book)
 
-
-        #JSON 포맷
+        # JSON 포맷
         items = []
         for i, book in enumerate(books):
             item1 = deepcopy(item)
@@ -369,7 +366,7 @@ class Social(Resource):  # 소셜 추천
             if len(check_book_list) == 0:  # 저장한 책이 아예 없을 경우
                 simpleText['simpleText']['text'] = '담긴 책이 하나도 없어요! 책을 추천 받아 내 서재에 저장해 보세요!'
 
-                outputs = [simpleText, carousel_itemCard]
+                outputs = [simpleText]
                 responseBody['template']['outputs'] = outputs
 
                 quickReplies = []
