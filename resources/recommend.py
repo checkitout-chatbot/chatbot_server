@@ -387,6 +387,7 @@ class Social(Resource):  # 소셜 추천
                 responseBody['template']['quickReplies'] = quickReplies
             else:
                 rec_books = []
+                cnt = 0  # 무한루프 방지용 최대 5번 검색
                 while len(rec_books) == 0:
                     # 저장한 책 중 랜덤으로 한 권 뽑기
                     random_num = random.randint(0, len(check_book_list)-1)
@@ -397,6 +398,9 @@ class Social(Resource):  # 소셜 추천
                     rec_books = BookSimilarModel.find_by_book_id(
                         check_book['book_id'])
                     print(f'뽑은 책과 유사한 책들: {rec_books}')
+                    if cnt == 5:
+                        break
+                    cnt += 1
 
                 items = []
                 for i, rec_book in enumerate(rec_books):
