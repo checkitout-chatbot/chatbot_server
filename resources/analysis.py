@@ -80,7 +80,7 @@ class CreateGraph(Resource):
                 "outputs": [
                     {
                         "simpleImage": {
-                            "imageUrl": "http://127.0.0.1:5000/static/images/graph.png",
+                            "imageUrl": "http://43.200.157.176/static/images/graph.png",
                             "altText": "분석 그래프"
                         }
                     },
