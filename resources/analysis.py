@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, make_response
 from flask_restful import Resource, reqparse
 from models.user import UserModel
 from models.book_list import BookListModel
@@ -17,7 +17,7 @@ class CreateGraph(Resource):
         """
         graph 이미지 rendering
         """
-        return render_template("graph.html")
+        return make_response(render_template('graph.html'))
 
     def post(self):
         """
