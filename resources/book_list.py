@@ -36,7 +36,7 @@ class BookListWant(Resource):
         itemLists = []
 
         # 저장한 책이 존재하는지 확인
-        books = BookListModel.find_by_status(user_id, 0)
+        books = BookListModel.find_by_user_status(user_id, 0)
         cnt = 0
         if books:
             for book in books:
@@ -147,7 +147,7 @@ class BookListReview(Resource):
         itemLists = []
 
         # 저장한 책이 존재하면
-        books = BookListModel.find_by_status(user_id, 1)
+        books = BookListModel.find_by_user_status(user_id, 1)
         cnt = 0
         if books:
             for book in books:

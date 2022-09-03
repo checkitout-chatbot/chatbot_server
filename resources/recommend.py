@@ -358,7 +358,7 @@ class Social(Resource):  # 소셜 추천
         responseBody = response.responseBody
 
         # 해당 유저의 읽은 책을 가져옴
-        check_read_list = BookListModel.find_by_status(
+        check_read_list = BookListModel.find_by_user_status(
             user_id=user_id, status=1)
         if len(check_read_list) < 6:  # 평점을 남긴 책이 5권 이하일 경우
             # 해당 유저의 책 전부를 가져옴
