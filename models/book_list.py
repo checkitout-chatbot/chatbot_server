@@ -49,6 +49,13 @@ class BookListModel(db.Model):
     def find_by_user_book(cls, user_id, book_id):
         return cls.query.filter_by(user_id=user_id, book_id=book_id).first()
 
+    @classmethod
+    def find_by_status(cls, status):
+        """
+        입력받은 status의 책 전부 가져오기
+        """
+        return cls.query.filter_by(status=status).all()
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
