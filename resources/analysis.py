@@ -1,0 +1,94 @@
+from copy import deepcopy
+from flask_restful import Resource, reqparse
+from models.book import BookModel
+from models.user import UserModel
+from models.book_list import BookListModel
+from resources.user import UserRegister
+from resources.response import Response, BlockID
+import log
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+class CreateGraph(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('userRequest', type=dict, required=True)
+
+    def post(self):
+        """
+        읽고 싶은 책 리스트 출력
+        """
+        data = CreateGraph.parser.parse_args()
+        log.info_log(data)
+
+        # 신규유저면 DB에 저장
+        username = data['userRequest']['user']['id']
+        UserRegister.check_id(username=username)
+        user_id = UserModel.find_by_username(username).json()['id']
+
+        response = Response()
+
+        books = BookListModel.find_by_status(1)
+
+        book_list = pd.DataFrame()
+        for book in books:
+            n_book_list = pd.DataFrame.from_dict([book.json()])
+            book_list = pd.concat(
+                [book_list, n_book_list], ignore_index=True)
+        print(book_list.head())
+        book_list.drop(['review', 'rate', 'created_dt',
+                       'modified_dt'], inplace=True, axis=1)
+
+        cnt_status = book_list['user_id'].value_counts()
+        users = cnt_status.index.tolist()
+        values = cnt_status.tolist()
+        avg = int(sum(values) / len(values))
+        me_values = values[users.index(user_id)]
+
+        n_values = []
+        n_values.append(me_values)
+        n_values.append(avg)
+        n_values.append(max(values))
+        print(n_values)
+
+        x = np.arange(len(n_values))
+        labels = [None] * 3
+        labels[n_values.index(max(values))] = 'maxiumum'
+        labels[n_values.index(avg)] = 'average'
+        labels[n_values.index(me_values)] = 'me'
+        print(labels)
+
+        bar_colors = ['#edc5d2', '#e3a58f', '#79b05f']
+
+        plt.axhline(avg, 0, len(n_values), color='red',
+                    linestyle='--', linewidth=2)
+        plt.text(n_values.index(me_values),
+                 me_values+1, 'Me ⬇️️', color='blue')
+        plt.bar(x, n_values, align='center',
+                tick_label=labels, width=0.4, color=bar_colors)
+        plt.title('your location')
+        plt.ylabel('Number of Books')
+
+        plt.savefig('graph.png')
+
+        response = {
+            "version": "2.0",
+            "template": {
+                "outputs": [
+                    {
+                        "simpleImage": {
+                            "imageUrl": "graph.png",
+                            "altText": "분석 그래프"
+                        }
+                    },
+                    {
+                        "simpleText": {
+                            "text": "현재 당신의 위치입니다."
+                        }
+                    }
+                ]
+            }
+        }
+
+        return response
