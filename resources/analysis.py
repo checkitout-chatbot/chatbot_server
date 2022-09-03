@@ -48,6 +48,8 @@ class CreateGraph(Resource):
         avg = int(sum(values) / len(values))
         me_values = values[users.index(user_id)]
 
+        rank = values.index(values[users.index(user_id)]) + 1
+
         n_values = []
         n_values.append(me_values)
         n_values.append(avg)
@@ -86,7 +88,7 @@ class CreateGraph(Resource):
                     },
                     {
                         "simpleText": {
-                            "text": "현재 당신의 위치입니다."
+                            "text": f"현재 {rank}등 입니다!😆."
                         }
                     }
                 ]
