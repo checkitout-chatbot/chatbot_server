@@ -1,10 +1,8 @@
-from copy import deepcopy
+from flask import render_template
 from flask_restful import Resource, reqparse
-from models.book import BookModel
 from models.user import UserModel
 from models.book_list import BookListModel
 from resources.user import UserRegister
-from resources.response import Response, BlockID
 import log
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -13,7 +11,13 @@ import numpy as np
 
 class CreateGraph(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('userRequest', type=dict, required=True)
+    parser.add_argument('userRequest', type=dict)
+
+    def get(self):
+        """
+        graph 이미지 rendering
+        """
+        return render_template("graph.html")
 
     def post(self):
         """
@@ -26,8 +30,6 @@ class CreateGraph(Resource):
         username = data['userRequest']['user']['id']
         UserRegister.check_id(username=username)
         user_id = UserModel.find_by_username(username).json()['id']
-
-        response = Response()
 
         books = BookListModel.find_by_status(1)
 
@@ -70,7 +72,7 @@ class CreateGraph(Resource):
         plt.title('your location')
         plt.ylabel('Number of Books')
 
-        plt.savefig('graph.png')
+        plt.savefig('static/images/graph.png')
 
         response = {
             "version": "2.0",
@@ -78,7 +80,7 @@ class CreateGraph(Resource):
                 "outputs": [
                     {
                         "simpleImage": {
-                            "imageUrl": "graph.png",
+                            "imageUrl": "http://43.200.157.176/static/images/graph.png",
                             "altText": "분석 그래프"
                         }
                     },
