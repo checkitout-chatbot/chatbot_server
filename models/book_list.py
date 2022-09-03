@@ -28,7 +28,7 @@ class BookListModel(db.Model):
                 'review': self.review, 'rate': self.rate, 'created_dt': self.created_dt, 'modified_dt': self.modified_dt}
 
     @classmethod
-    def find_by_status(cls, user_id, status):
+    def find_by_user_status(cls, user_id, status):
         """
         user_id에 해당하고 status를 변수로 받아서 해당 상태의 책 전부 찾기
         """
