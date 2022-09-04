@@ -7,6 +7,7 @@ import log
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 
 class CreateGraph(Resource):
@@ -57,10 +58,7 @@ class CreateGraph(Resource):
         print(n_values)
 
         x = np.arange(len(n_values))
-        labels = [None] * 3
-        labels[n_values.index(max(values))] = 'maxiumum'
-        labels[n_values.index(avg)] = 'average'
-        labels[n_values.index(me_values)] = 'me'
+        labels = ["me", "average", "maximum" ]
         print(labels)
 
         bar_colors = ['#edc5d2', '#e3a58f', '#79b05f']
@@ -68,13 +66,14 @@ class CreateGraph(Resource):
         plt.axhline(avg, 0, len(n_values), color='red',
                     linestyle='--', linewidth=2)
         plt.text(n_values.index(me_values),
-                 me_values+1, 'Me ⬇️️', color='blue')
+                 me_values+1, f'Me ⬇️️ {me_values}books', color='blue')
         plt.bar(x, n_values, align='center',
                 tick_label=labels, width=0.4, color=bar_colors)
-        plt.title('your location')
+        plt.title('rank')
         plt.ylabel('Number of Books')
 
         plt.savefig('static/images/graph.png')
+        
 
         response = {
             "version": "2.0",
