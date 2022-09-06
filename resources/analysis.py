@@ -65,10 +65,13 @@ class CreateGraph(Resource):
 
         plt.axhline(avg, 0, len(n_values), color='red',
                     linestyle='--', linewidth=2)
-        plt.text(n_values.index(me_values),
-                 me_values+1, f'Me ⬇️️ {me_values}books', color='blue')
-        plt.bar(x, n_values, align='center',
+        
+        bar = plt.bar(x, n_values, align='center',
                 tick_label=labels, width=0.4, color=bar_colors)
+        height = bar[0].get_height()
+        plt.text(n_values.index(me_values),height, 
+                    f'Me ⬇️️ {me_values}books', ha='center', va='bottom', color='blue')
+
         plt.title('rank')
         plt.ylabel('Number of Books')
 
