@@ -2,10 +2,12 @@ from flask import render_template, make_response
 from flask_restful import Resource, reqparse
 from models.user import UserModel
 from models.book_list import BookListModel
+from models.book import BookModel
 from resources.user import UserRegister
+from resources.response import Response, BlockID
+from copy import deepcopy
 import log
 import pandas as pd
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import numpy as np
@@ -62,8 +64,6 @@ class CreateGraph(Resource):
 
         # 한글 글꼴 설정
         font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
-        #  font = fm.FontProperties(fname=font_path).get_name()
-        #  plt.rc('font', family=font)
         fontprop = fm.FontProperties(fname=font_path)
 
         # 막대 색 설정
@@ -90,27 +90,95 @@ class CreateGraph(Resource):
                  va='bottom', color='gray', fontproperties=fontprop)
 
         plt.title('읽은 책 랭킹', fontproperties=fontprop)
-        #  plt.ylabel('읽은 책 권수', fontproperties=fontprop)
+        plt.ylabel('읽은 책 권수', fontproperties=fontprop)
 
         plt.savefig('static/images/graph.png')
 
-        response = {
-            "version": "2.0",
-            "template": {
-                "outputs": [
-                    {
-                        "simpleImage": {
-                            "imageUrl": "http://43.200.157.176/static/images/graph.png",
+        # 겹치는 책 추천
+        cnt_status = book_list['book_id'].value_counts()
+        books = cnt_status.index.tolist()
+        users = cnt_status.tolist()
+        print(books[0:5])
+
+        blockid = BlockID()
+        response = Response()
+        itemList = response.itemList
+        item = response.item
+        button = response.button
+        carousel_itemCard = response.carousel_itemCard
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+
+        items = []
+        for book in books[0:5]:
+            book = BookModel.find_by_id(book).json()
+            item1 = deepcopy(item)
+            item1['imageTitle']['title'] = book['title']
+            item1['imageTitle']['imageUrl'] = book['img']
+
+            itemLists = []
+            itemList1 = deepcopy(itemList)
+            itemList1['title'] = '지은이'
+            itemList1['description'] = book['author']
+            itemLists.append(itemList1)
+
+            itemList2 = deepcopy(itemList)
+            itemList2['title'] = '출판사'
+            itemList2['description'] = book['publisher']
+            itemLists.append(itemList2)
+
+            itemList3 = deepcopy(itemList)
+            itemList3['title'] = '출판일'
+            itemList3['description'] = str(book['pubDate'])
+            itemLists.append(itemList3)
+            item1['itemList'] = itemLists
+
+            buttons = []
+            button1 = deepcopy(button)
+            button1['action'] = 'webLink'
+            button1['label'] = '책 정보'
+            kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+            button1['webLinkUrl'] = kyobo_url
+            buttons.append(button1)
+
+            button2 = deepcopy(button)
+            button2['action'] = 'block'
+            button2['label'] = '책 저장'
+            button2['blockId'] = blockid.save_menu
+            button2['extra']['book_id'] = book['id']
+            buttons.append(button2)
+            item1['buttons'] = buttons
+
+            items.append(item1)
+
+        carousel_itemCard['carousel']['items'] = items
+        simple_image = {
+            "simpleImage": {
+                "imageUrl": "http://43.200.157.176/static/images/graph.png",
                             "altText": "분석 그래프"
-                        }
-                    },
-                    {
-                        "simpleText": {
-                            "text": f"현재 {rank}등 입니다!😆."
-                        }
-                    }
-                ]
             }
         }
 
-        return response
+        simpleText['simpleText']['text'] = f"현재 {rank}등 입니다!😆.\n다른 유저들이 많이 읽은 책 입니다. 한 번 읽어 보세요~"
+
+        outputs = [simple_image, simpleText, carousel_itemCard]
+        responseBody['template']['outputs'] = outputs
+
+        quickReplies = []
+        quickReply = response.quickReply
+
+        quickReply1 = deepcopy(quickReply)
+        quickReply1['action'] = 'block'
+        quickReply1['label'] = '뒤로가기'
+        quickReply1['blockId'] = blockid.list_menu
+        quickReplies.append(quickReply1)
+
+        quickReply2 = deepcopy(quickReply)
+        quickReply2['action'] = 'block'
+        quickReply2['label'] = '도움말'
+        quickReply2['blockId'] = blockid.howto
+        quickReplies.append(quickReply2)
+
+        responseBody['template']['quickReplies'] = quickReplies
+
+        return responseBody
