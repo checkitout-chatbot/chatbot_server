@@ -9,6 +9,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import numpy as np
+import os
 
 
 class CreateGraph(Resource):
@@ -19,7 +20,9 @@ class CreateGraph(Resource):
         """
         graph 이미지 rendering
         """
-        return make_response(render_template('graph.html'))
+        imageList = os.listdir('static/images')
+        imagelist = ['images/' + image for image in imageList]
+        return make_response(render_template('graph.html', imagelist=imagelist))
 
     def post(self):
         """
@@ -92,7 +95,8 @@ class CreateGraph(Resource):
         plt.title('읽은 책 랭킹', fontproperties=fontprop)
         #  plt.ylabel('읽은 책 권수', fontproperties=fontprop)
 
-        plt.savefig('static/images/graph.png')
+        # 이미지 저장
+        plt.savefig(f'static/images/graph_{user_id}.png')
 
         response = {
             "version": "2.0",
