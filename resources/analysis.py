@@ -159,7 +159,7 @@ class CreateGraph(Resource):
             }
         }
 
-        simpleText['simpleText']['text'] = f"현재 {rank}등 입니다!😆."
+        simpleText['simpleText']['text'] = f"현재 {rank}등 입니다!😆.\n다른 유저들이 많이 읽은 책 입니다. 한 번 읽어 보세요~"
 
         outputs = [simple_image, simpleText, carousel_itemCard]
         responseBody['template']['outputs'] = outputs
