@@ -158,7 +158,7 @@ class CreateGraph(Resource):
         carousel_itemCard['carousel']['items'] = items
         simple_image = {
             "simpleImage": {
-                "imageUrl": "http://43.200.157.176/static/images/graph.png",
+                "imageUrl": f"http://43.200.157.176/static/images/graph_{user_id}.png",
                             "altText": "분석 그래프"
             }
         }
