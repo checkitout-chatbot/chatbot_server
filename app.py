@@ -9,6 +9,7 @@ from resources.book_list import BookListWant, BookListReview
 from resources.recommend import Movie, Today, Similar, Sense, Social
 from resources.search import Barcode, Keyword
 from resources.edit_list import SaveWanted, SaveReview, ViewReview, SaveMenu, EditMenu, DeleteBook
+from resources.analysis import CreateGraph
 
 app = Flask(__name__)
 
@@ -29,7 +30,11 @@ api.add_resource(Today, '/recommend/today')
 api.add_resource(Similar, '/recommend/similar')
 api.add_resource(Sense, '/recommend/sense/<string:category>')
 api.add_resource(Social, '/recommend/social')
+<<<<<<< HEAD
 api.add_resource(Movie, '/recommend/movie')
+=======
+api.add_resource(CreateGraph, '/recommend/graph')
+>>>>>>> dd8f84a8ad7cc5fb6c6a5ea425873d4df5759887
 
 # 저장한 책 리스트 확인
 # 0: 읽고 싶은 책 1: 읽은 책
