@@ -545,3 +545,19 @@ class Social(Resource):  # 소셜 추천
             responseBody['template']['quickReplies'] = quickReplies
 
         return responseBody
+
+
+class Movie(Resource):  # 책과 비슷한 영화 추천
+    {
+    "version": "2.0",
+    "template": {
+        "outputs": [
+            {
+                "simpleText": {
+                    "text": "준비 중입니다."
+                }
+            }
+        ]
+    }
+}
+   
