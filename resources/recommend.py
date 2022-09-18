@@ -5,6 +5,7 @@ from models.user import UserModel
 from models.user_similar import UserSimilarModel
 from models.book_similar import BookSimilarModel
 from models.book_list import BookListModel
+from models.movie import MovieModel
 from resources.user import UserRegister
 from resources.search import Searching
 from resources.response import Response, BlockID
@@ -548,16 +549,116 @@ class Social(Resource):  # 소셜 추천
 
 
 class Movie(Resource):  # 책과 비슷한 영화 추천
-    {
-    "version": "2.0",
-    "template": {
-        "outputs": [
-            {
-                "simpleText": {
-                    "text": "준비 중입니다."
-                }
-            }
-        ]
-    }
-}
+    parser = reqparse.RequestParser()
+    parser.add_argument('action', type=dict)
+
+    def post(self):
+        data = Similar.parser.parse_args()
+        log.info_log(data)
+
+        blockid = BlockID()
+        response = Response()
+        itemList = response.itemList
+        item = response.item
+        button = response.button
+        carousel_itemCard = response.carousel_itemCard
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+
+        try:
+            # kakao 책 검색으로 제목입력하여 ISBN 추출
+            input_title = data['action']['params']['title']
+            search = Searching()
+            input_movies = search.search_keywords(input_title, 30)
+
+            # 추천 책이 나올 때까지 검색
+            similar_movies = []
+            for i in input_movies.keys():
+                try:
+                    book = MovieModel.find_by_isbn(
+                        input_movies[i]['isbn']).json()
+                    similar_movies = BookSimilarModel.find_by_book_id(
+                        book['id'])
+                    break
+                except:
+                    pass
+
+            # 유사도 id값들로 책 찾아 리스트로 저장
+            movies = []
+            for similar_movie in similar_movies:
+                similar_movie = similar_movie.json()
+                movies.append(MovieModel.find_by_id(
+                    similar_movie['book_similar_id']).json())
+
+            items = []
+            for i, movie in enumerate(movies):
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = movie['title']
+                item1['imageTitle']['imageUrl'] = movie['img']
+
+                itemLists = []
+                itemList1 = deepcopy(itemList)
+                itemList1['title'] = '지은이'
+                itemList1['description'] = movie['author']
+                itemLists.append(itemList1)
+
+                itemList2 = deepcopy(itemList)
+                itemList2['title'] = '출판사'
+                itemList2['description'] = movie['publisher']
+                itemLists.append(itemList2)
+
+                itemList3 = deepcopy(itemList)
+                itemList3['title'] = '출판일'
+                itemList3['description'] = str(movie['pubDate'])
+                itemLists.append(itemList3)
+                item1['itemList'] = itemLists
+
+                buttons = []
+                button1 = deepcopy(button)
+                button1['action'] = 'webLink'
+                button1['label'] = '책 정보'
+                kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
+                button1['webLinkUrl'] = kyobo_url
+                buttons.append(button1)
+
+                button2 = deepcopy(button)
+                button2['action'] = 'block'
+                button2['label'] = '책 저장'
+                button2['blockId'] = blockid.save_menu
+                button2['extra']['book_id'] = movie['id']
+                buttons.append(button2)
+                item1['buttons'] = buttons
+
+                items.append(item1)
+
+                if i == 4:
+                    break
+
+            carousel_itemCard['carousel']['items'] = items
+            simpleText['simpleText']['text'] = '이런 책들을 좋아하실 것 같아요🥰 어떠세요??'
+
+            outputs = [simpleText, carousel_itemCard]
+            responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply = response.quickReply
+
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            responseBody['template']['quickReplies'] = quickReplies
+
+        except Exception as e:
+            log.error_log(e)
+
+        return responseBody
    
