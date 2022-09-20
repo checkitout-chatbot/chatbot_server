@@ -11,8 +11,8 @@ class BookListModel(db.Model):
     status = db.Column(db.Integer)
     review = db.Column(db.String(255))
     rate = db.Column(db.Float(precision=1))
-    created_dt = db.Column(db.Date)
-    modified_dt = db.Column(db.Date)
+    created_dt = db.Column(db.DateTime)
+    modified_dt = db.Column(db.DateTime)
 
     def __init__(self, user_id, book_id, status, review=None, rate=None, created_dt=None, modified_dt=None):
         self.user_id = user_id

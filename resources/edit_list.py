@@ -68,7 +68,7 @@ class SaveWanted(Resource):
             else:
                 now = datetime.now()
                 booklist = BookListModel(
-                    user_id=user_id, book_id=book_id, status=0, created_dt=now.date())
+                    user_id=user_id, book_id=book_id, status=0, created_dt=now)
                 booklist.save_to_db()
 
                 simpleText['simpleText']['text'] = '읽고 싶은 책 목록에 책을 저장했습니다.\n즐거운 독서 라이프 되세요~'
@@ -156,10 +156,10 @@ class SaveReview(Resource):
             booklist.status = 1
             booklist.review = review
             booklist.rate = int(rate)
-            booklist.modified_dt = now.date()
+            booklist.modified_dt = now
         else:
             booklist = BookListModel(user_id=user_id, book_id=book_id, status=1,
-                                     review=review, rate=rate, created_dt=now.date())
+                                     review=review, rate=rate, created_dt=now)
         booklist.save_to_db()
 
         simpleText['simpleText']['text'] = '저장을 완료했습니다!'
