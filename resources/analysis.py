@@ -72,11 +72,8 @@ class CreateGraph(Resource):
         # 막대 색 설정
         bar_colors = ['#edc5d2', '#e3a58f', '#79b05f']
 
-        plt.clf()
-
         plt.axhline(avg, 0, len(n_values), color='red',
                     linestyle='--', linewidth=2)
-
 
         bar = plt.bar(x, n_values, align='center', tick_label=labels,
                       width=0.4, color=bar_colors)
@@ -100,6 +97,7 @@ class CreateGraph(Resource):
 
         # 이미지 저장
         plt.savefig(f'static/images/graph_{user_id}.png')
+        plt.clf()
 
         # 겹치는 책 추천
         cnt_status = book_list['book_id'].value_counts()
