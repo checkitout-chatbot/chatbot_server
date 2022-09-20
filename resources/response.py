@@ -80,6 +80,15 @@ class Response:
             "buttons": [
             ]
         }
+        self.basicCard = {
+            "basicCard": {
+                "title": "",
+                "description": "",
+                "thumbnail": {
+                    "imageUrl": ""
+                }
+            }
+        }
 
 
 class BlockID:

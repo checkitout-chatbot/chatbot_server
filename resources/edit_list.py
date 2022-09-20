@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.book_list import BookListModel
 from models.user import UserModel
+from models.book import BookModel
 from resources.response import Response, BlockID
 from resources.user import UserRegister
 from copy import deepcopy
@@ -209,17 +210,21 @@ class ViewReview(Resource):
         response = Response()
         blockid = BlockID()
         simpleText = response.simpleText
+        basicCard = response.basicCard
         responseBody = response.responseBody
         quickReply = response.quickReply
 
         # 리스트에 등록된 책인지 확인
+        book = BookModel.find_by_id(book_id).json()
         book_review = BookListModel.find_by_user_book(
             user_id=user_id, book_id=book_id).json()
         if book_review['status'] == 0:
             simpleText['simpleText']['text'] = "아직 남긴 평점이 없습니다. 평점을 남겨 보세요!"
         else:
-            simpleText['simpleText']['text'] = f"평점: {book_review['rate']}\n리뷰: {book_review['review']}"
-        outputs = [simpleText]
+            basicCard['basicCard']['title'] = book['title']
+            basicCard['basicCard']['description'] = f"평점: {book_review['rate']}\n리뷰: {book_review['review']}"
+            basicCard['basicCard']['thumbnail']['imageUrl'] = book['img']
+        outputs = [basicCard]
         responseBody['template']['outputs'] = outputs
 
         quickReplies = []
