@@ -85,7 +85,8 @@ class Response:
                 "title": "",
                 "description": "",
                 "thumbnail": {
-                    "imageUrl": ""
+                    "imageUrl": "",
+                    "fixedRatio": "true"
                 }
             }
         }
