@@ -97,7 +97,7 @@ class CreateGraph(Resource):
 
         # 이미지 저장
         plt.savefig(f'static/images/graph_{user_id}.png')
-        plt.clf()
+        plt.close()
 
         # 겹치는 책 추천
         cnt_status = book_list['book_id'].value_counts()
