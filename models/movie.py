@@ -1,4 +1,4 @@
-from turtle import st
+#  from turtle import st
 from db import db
 
 
@@ -62,7 +62,3 @@ class MovieModel(db.Model):
 # if __name__ == '__main__':
 #     book = BookModel.find_by_keyword('정의란')
 #     print(book)
-
-
-
-
