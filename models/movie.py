@@ -1,4 +1,3 @@
-#  from turtle import st
 from db import db
 
 
