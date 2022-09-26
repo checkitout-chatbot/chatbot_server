@@ -261,3 +261,7 @@ hangul_stopword.txt
 *.bin
 *.pickle
 *.png
+
+
+#py-hanspell
+py-hanspell-master/
