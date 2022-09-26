@@ -1,4 +1,5 @@
 from db import db
+from sqlalchemy import desc
 
 
 class BookListModel(db.Model):
@@ -32,7 +33,7 @@ class BookListModel(db.Model):
         """
         user_id에 해당하고 status를 변수로 받아서 해당 상태의 책 전부 찾기
         """
-        return cls.query.filter_by(user_id=user_id, status=status).order_by("created_dt").all()
+        return cls.query.filter_by(user_id=user_id, status=status).order_by(desc("created_dt")).all()
 
     @classmethod
     def find_by_user(cls, user_id):
