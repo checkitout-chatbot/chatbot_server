@@ -570,9 +570,9 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
            # 추천 책이 나올 때까지 검색
             similar_movies = []
             try:
-                book = BookModel.find_by_id(8305)
-                book2 = book.json()
-                similar_movies = MovieSimilarModel.find_by_movie_id(book2['id'])
+                book = '8305'
+                movies = MovieSimilarModel.find_by_book_id(book).json    #book_id, movie_similar_id가 반환
+                similar_movies = MovieModel.find_by_id(movies['movie_similar_id'])
             except:
                 pass
 

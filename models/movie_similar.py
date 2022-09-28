@@ -17,11 +17,11 @@ class MovieSimilarModel(db.Model):
         return {'book_id': self.book_id, 'movie_similar_id': self.movie_similar_id}
 
     @classmethod
-    def find_by_movie_id(cls, movie_id):
+    def find_by_book_id(cls, book_id):
         """
         book id를 입력하면 해당 책과 유사한 책 전부 가져오기
         """
-        return cls.query.filter_by(movie_id=movie_id).all()
+        return cls.query.filter_by(book_id=book_id).all()
 
     def save_to_db(self):
         db.session.add(self)
