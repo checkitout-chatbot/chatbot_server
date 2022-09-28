@@ -6,6 +6,7 @@ from models.user_similar import UserSimilarModel
 from models.book_similar import BookSimilarModel
 from models.book_list import BookListModel
 from models.movie import MovieModel
+from models.movie_similar import MovieSimilarModel
 from resources.user import UserRegister
 from resources.search import Searching
 from resources.response import Response, BlockID
@@ -553,7 +554,7 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
     parser.add_argument('action', type=dict)
 
     def post(self):
-        data = Similar.parser.parse_args()
+        data = Movie.parser.parse_args()
         log.info_log(data)
 
         blockid = BlockID()
@@ -566,29 +567,21 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
         responseBody = response.responseBody
 
         try:
-            # kakao 책 검색으로 제목입력하여 ISBN 추출
-            input_title = data['action']['params']['title']
-            search = Searching()
-            input_movies = search.search_keywords(input_title, 30)
-
-            # 추천 책이 나올 때까지 검색
+           # 추천 책이 나올 때까지 검색
             similar_movies = []
-            for i in input_movies.keys():
-                try:
-                    book = MovieModel.find_by_isbn(
-                        input_movies[i]['isbn']).json()
-                    similar_movies = BookSimilarModel.find_by_book_id(
-                        book['id'])
-                    break
-                except:
-                    pass
+            try:
+                book = BookModel.find_by_id(8305)
+                book2 = book.json()
+                similar_movies = MovieSimilarModel.find_by_movie_id(book2['id'])
+            except:
+                pass
 
             # 유사도 id값들로 책 찾아 리스트로 저장
             movies = []
             for similar_movie in similar_movies:
                 similar_movie = similar_movie.json()
                 movies.append(MovieModel.find_by_id(
-                    similar_movie['book_similar_id']).json())
+                    similar_movie['movie_similar_id']).json())
 
             items = []
             for i, movie in enumerate(movies):
@@ -598,18 +591,18 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
 
                 itemLists = []
                 itemList1 = deepcopy(itemList)
-                itemList1['title'] = '지은이'
-                itemList1['description'] = movie['author']
+                itemList1['title'] = '감독'
+                itemList1['description'] = movie['director']
                 itemLists.append(itemList1)
 
                 itemList2 = deepcopy(itemList)
-                itemList2['title'] = '출판사'
-                itemList2['description'] = movie['publisher']
+                itemList2['title'] = '국가'
+                itemList2['description'] = movie['nation']
                 itemLists.append(itemList2)
 
                 itemList3 = deepcopy(itemList)
-                itemList3['title'] = '출판일'
-                itemList3['description'] = str(movie['pubDate'])
+                itemList3['title'] = '개봉년도'
+                itemList3['description'] = str(movie['openYear'])
                 itemLists.append(itemList3)
                 item1['itemList'] = itemLists
 
@@ -635,7 +628,7 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
                     break
 
             carousel_itemCard['carousel']['items'] = items
-            simpleText['simpleText']['text'] = '이런 책들을 좋아하실 것 같아요🥰 어떠세요??'
+            simpleText['simpleText']['text'] = '🎞이런 영화들을 좋아하실 것 같아요🥰 어떠세요??'
 
             outputs = [simpleText, carousel_itemCard]
             responseBody['template']['outputs'] = outputs
@@ -661,4 +654,3 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
             log.error_log(e)
 
         return responseBody
-   
