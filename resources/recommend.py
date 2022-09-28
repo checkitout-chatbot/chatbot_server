@@ -683,10 +683,11 @@ class Music(Resource):  # 책과 비슷한 음악 추천
         responseBody = response.responseBody
 
         try:
-            # kakao 책 검색으로 제목입력하여 ISBN 추출
+            # 알라딘 책 검색으로 제목입력하여 ISBN 추출
             input_title = data['action']['params']['title']
             search = Searching()
             input_books = search.search_keywords(input_title, 30)
+            # 여기서 출력값 비어 있음
             print(input_books)
 
             # 해당 책이 나올 때까지 검색
