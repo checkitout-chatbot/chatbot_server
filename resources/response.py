@@ -107,6 +107,7 @@ class BlockID:
         self.view_review = '62e465e7fa3e133a938dd091'
         self.edit_menu = '62e5e6e2331a5d11fe4c3da2'
         self.delete_book = '62e5f4abfa3e133a938dd65e'
+        self.recom_music = '631f46f942b6f4578ef7e230'
 
 
 if __name__ == "__main__":

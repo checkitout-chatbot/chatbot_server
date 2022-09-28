@@ -670,7 +670,7 @@ class Music(Resource):  # 책과 비슷한 음악 추천
     parser.add_argument('action', type=dict)
 
     def post(self):
-        data = Similar.parser.parse_args()
+        data = Music.parser.parse_args()
         log.info_log(data)
 
         blockid = BlockID()
@@ -687,6 +687,7 @@ class Music(Resource):  # 책과 비슷한 음악 추천
             input_title = data['action']['params']['title']
             search = Searching()
             input_books = search.search_keywords(input_title, 30)
+            print(input_books)
 
             # 해당 책이 나올 때까지 검색
             similar_musics = []
@@ -719,13 +720,15 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                 similar_music = similar_music.json()
                 musics.append(MusicModel.find_by_id(
                     similar_musics['music_id']).json())
+            
+            # print(musics)
 
             items = []
             for i, music in enumerate(musics):
                 item1 = deepcopy(item)
                 item1['imageTitle']['title'] = music['title']
                 # item1['imageTitle']['imageUrl'] = music['img']
-                item1['imageTitle']['imageUrl'] = 'https://cdnimg.melon.co.kr/cm2/album/images/110/63/665/11063665_20220926110109_500.jpg'
+                item1['imageTitle']['imageUrl'] = "https://cdnimg.melon.co.kr/cm2/album/images/110/63/665/11063665_20220926110109_500.jpg"
 
                 itemLists = []
                 itemList1 = deepcopy(itemList)
@@ -738,11 +741,11 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                 itemList2['description'] = music['genre']
                 itemLists.append(itemList2)
 
-                itemList3 = deepcopy(itemList)
-                itemList3['title'] = '가사'
-                itemList3['description'] = music['lyric']
-                itemLists.append(itemList3)
-                item1['itemList'] = itemLists
+                # itemList3 = deepcopy(itemList)
+                # itemList3['title'] = '가사'
+                # itemList3['description'] = music['lyric']
+                # itemLists.append(itemList3)
+                # item1['itemList'] = itemLists
 
                 buttons = []
                 button1 = deepcopy(button)
@@ -755,7 +758,7 @@ class Music(Resource):  # 책과 비슷한 음악 추천
 
                 items.append(item1)
 
-                if i == 9:
+                if i == 5:
                     break
 
             carousel_itemCard['carousel']['items'] = items

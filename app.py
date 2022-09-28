@@ -6,7 +6,7 @@ from flask_jwt import JWT
 
 from security import authenticate, identity
 from resources.book_list import BookListWant, BookListReview
-from resources.recommend import Movie, Today, Similar, Sense, Social
+from resources.recommend import Movie, Today, Similar, Sense, Social, Music
 from resources.search import Barcode, Keyword
 from resources.edit_list import SaveWanted, SaveReview, ViewReview, SaveMenu, EditMenu, DeleteBook
 from resources.analysis import CreateGraph
@@ -33,6 +33,7 @@ api.add_resource(Similar, '/recommend/similar')
 api.add_resource(Sense, '/recommend/sense/<string:category>')
 api.add_resource(Social, '/recommend/social')
 api.add_resource(Movie, '/recommend/movie')
+api.add_resource(Music, '/recommend/music')
 api.add_resource(CreateGraph, '/recommend/graph')
 
 # 저장한 책 리스트 확인

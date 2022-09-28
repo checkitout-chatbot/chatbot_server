@@ -5,7 +5,7 @@ class MusicSimilarModel(db.Model):
     __tablename__ = 'music_similar'
 
     book_id = db.Column(db.Integer)
-    music_id = db.Column(db.Integer, db.ForeignKey('musics.id'))
+    music_id = db.Column(db.Integer, db.ForeignKey('musics.id'), primary_key=True)
 
     def __init__(self, book_id, music_id):
         self.book_id = book_id
