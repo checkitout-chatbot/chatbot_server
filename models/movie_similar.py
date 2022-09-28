@@ -7,7 +7,7 @@ class MovieSimilarModel(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey(
         'books.id'), primary_key=True)
     movie_similar_id = db.Column(db.Integer, db.ForeignKey(
-        'movies.id'), primary_key=True)
+        'movie_similar.id'), primary_key=True)
 
     def __init__(self, book_id, movie_similar_id):
         self.book_id = book_id
