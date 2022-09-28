@@ -2,8 +2,10 @@ from copy import deepcopy
 from flask_restful import Resource, reqparse
 from models.book import BookModel
 from models.user import UserModel
+from models.music import MusicModel
 from models.user_similar import UserSimilarModel
 from models.book_similar import BookSimilarModel
+from models.music_similar import MusicSimilarModel
 from models.book_list import BookListModel
 from models.movie import MovieModel
 from resources.user import UserRegister
@@ -636,6 +638,128 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
 
             carousel_itemCard['carousel']['items'] = items
             simpleText['simpleText']['text'] = '이런 책들을 좋아하실 것 같아요🥰 어떠세요??'
+
+            outputs = [simpleText, carousel_itemCard]
+            responseBody['template']['outputs'] = outputs
+
+            quickReplies = []
+            quickReply = response.quickReply
+
+            quickReply1 = deepcopy(quickReply)
+            quickReply1['action'] = 'block'
+            quickReply1['label'] = '뒤로가기'
+            quickReply1['blockId'] = blockid.recom_menu
+            quickReplies.append(quickReply1)
+
+            quickReply2 = deepcopy(quickReply)
+            quickReply2['action'] = 'block'
+            quickReply2['label'] = '도움말'
+            quickReply2['blockId'] = blockid.howto
+            quickReplies.append(quickReply2)
+
+            responseBody['template']['quickReplies'] = quickReplies
+
+        except Exception as e:
+            log.error_log(e)
+
+        return responseBody
+
+
+class Music(Resource):  # 책과 비슷한 음악 추천
+    parser = reqparse.RequestParser()
+    parser.add_argument('action', type=dict)
+
+    def post(self):
+        data = Similar.parser.parse_args()
+        log.info_log(data)
+
+        blockid = BlockID()
+        response = Response()
+        itemList = response.itemList
+        item = response.item
+        button = response.button
+        carousel_itemCard = response.carousel_itemCard
+        simpleText = response.simpleText
+        responseBody = response.responseBody
+
+        try:
+            # kakao 책 검색으로 제목입력하여 ISBN 추출
+            input_title = data['action']['params']['title']
+            search = Searching()
+            input_books = search.search_keywords(input_title, 30)
+
+            # 해당 책이 나올 때까지 검색
+            similar_musics = []
+            for i in input_books.keys():
+                try:
+                    book = BookModel.find_by_isbn(
+                        input_books[i]['isbn']).json()
+                    similar_musics = MusicSimilarModel.find_by_book_id(
+                        book['id']+6526)
+                    break
+                except:
+                    pass
+
+            # concat_book_id = book['id']+6526
+
+            # sim_scores = list(enumerate(cosine_similarities[concat_book_id]))
+            # sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+            # # 가장 유사한 값 10개의 인덱스
+            # book_indices = [i[0] for i in sim_scores if i[0] <6526]
+            # book_indices = book_indices[1:11]
+
+            # # 전체 데이터프레임에서 해당 인덱스의 행만 추출. 10개의 행을 가진다.
+            # recommend = music_for_concat.iloc[book_indices].reset_index(drop=True)
+            # recommend
+
+            # 유사도 id값들로 책 찾아 리스트로 저장
+            musics = []
+            for similar_music in similar_musics:
+                similar_music = similar_music.json()
+                musics.append(MusicModel.find_by_id(
+                    similar_musics['music_id']).json())
+
+            items = []
+            for i, music in enumerate(musics):
+                item1 = deepcopy(item)
+                item1['imageTitle']['title'] = music['title']
+                # item1['imageTitle']['imageUrl'] = music['img']
+                item1['imageTitle']['imageUrl'] = 'https://cdnimg.melon.co.kr/cm2/album/images/110/63/665/11063665_20220926110109_500.jpg'
+
+                itemLists = []
+                itemList1 = deepcopy(itemList)
+                itemList1['title'] = '가수'
+                itemList1['description'] = music['singer']
+                itemLists.append(itemList1)
+
+                itemList2 = deepcopy(itemList)
+                itemList2['title'] = '장르'
+                itemList2['description'] = music['genre']
+                itemLists.append(itemList2)
+
+                itemList3 = deepcopy(itemList)
+                itemList3['title'] = '가사'
+                itemList3['description'] = music['lyric']
+                itemLists.append(itemList3)
+                item1['itemList'] = itemLists
+
+                buttons = []
+                button1 = deepcopy(button)
+                button1['action'] = 'webLink'
+                button1['label'] = '책 정보'
+                # f"https://www.melon.com/song/detail.htm?songId={music['melon_music_code']}" 
+                melon_url = f"https://www.melon.com/song/detail.htm?songId={music['melon_music_code']}"
+                button1['webLinkUrl'] = melon_url
+                buttons.append(button1)
+
+                items.append(item1)
+
+                if i == 9:
+                    break
+
+            carousel_itemCard['carousel']['items'] = items
+            simpleText['simpleText']['text'] = '이 노래와 함께 들어보세요 🎧 어떠세요??'
 
             outputs = [simpleText, carousel_itemCard]
             responseBody['template']['outputs'] = outputs
