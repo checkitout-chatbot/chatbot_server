@@ -10,7 +10,7 @@ wsgi_app = 'run:app'
 reload = True
 
 # port 주소
-bind = '0.0.0.0:5000'
+bind = '127.0.0.1:5000'
 
 # gunicorn access log파일 경로
 accesslog = 'log/itggi_access.log'
