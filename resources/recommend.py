@@ -567,24 +567,24 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
         responseBody = response.responseBody
 
         try:
-           # 추천 책이 나올 때까지 검색
-            similar_movies = []
-            try:
-                book = '8305'
-                movies = MovieSimilarModel.find_by_book_id(book).json    #book_id, movie_similar_id가 반환
-                similar_movies = MovieModel.find_by_id(movies['movie_similar_id'])
-            except:
-                pass
+            # kakao 책 검색으로 제목입력하여 ISBN 추출
+            input_title = data['action']['params']['title']
+            search = Searching()
+            input_books = search.search_keywords(input_title, 1)
+            book = BookModel.find_by_isbn(isbn=input_books[0]['isbn']).json()
+            print(f'유저가 입력한 책: {book}')
+
+            similar_movies = MovieSimilarModel.find_by_book_id(book['id'])
 
             # 유사도 id값들로 책 찾아 리스트로 저장
             movies = []
             for similar_movie in similar_movies:
-                similar_movie = similar_movie.json()
-                movies.append(MovieModel.find_by_id(
-                    similar_movie['movie_similar_id']).json())
+                movie_id = similar_movie.json()['movie_similar_id']
+                movies.append(MovieModel.find_by_id(movie_id).json())
 
             items = []
-            for i, movie in enumerate(movies):
+            for movie in movies:
+                print(f'입력받은 책과 유사한 영화: {movie}')
                 item1 = deepcopy(item)
                 item1['imageTitle']['title'] = movie['title']
                 item1['imageTitle']['imageUrl'] = movie['img']
@@ -592,7 +592,7 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
                 itemLists = []
                 itemList1 = deepcopy(itemList)
                 itemList1['title'] = '감독'
-                itemList1['description'] = movie['director']
+                itemList1['description'] = movie['directors']
                 itemLists.append(itemList1)
 
                 itemList2 = deepcopy(itemList)
@@ -602,30 +602,20 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
 
                 itemList3 = deepcopy(itemList)
                 itemList3['title'] = '개봉년도'
-                itemList3['description'] = str(movie['openYear'])
+                itemList3['description'] = movie['openYear']
                 itemLists.append(itemList3)
                 item1['itemList'] = itemLists
 
                 buttons = []
                 button1 = deepcopy(button)
                 button1['action'] = 'webLink'
-                button1['label'] = '책 정보'
-                kyobo_url = f"https://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode={book['isbn']}&orderClick=LEa&Kc="
-                button1['webLinkUrl'] = kyobo_url
+                button1['label'] = '영화 정보'
+                movie_url = f"https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query={movie['title']}"
+                button1['webLinkUrl'] = movie_url
                 buttons.append(button1)
-
-                button2 = deepcopy(button)
-                button2['action'] = 'block'
-                button2['label'] = '책 저장'
-                button2['blockId'] = blockid.save_menu
-                button2['extra']['book_id'] = movie['id']
-                buttons.append(button2)
                 item1['buttons'] = buttons
 
                 items.append(item1)
-
-                if i == 4:
-                    break
 
             carousel_itemCard['carousel']['items'] = items
             simpleText['simpleText']['text'] = '🎞이런 영화들을 좋아하실 것 같아요🥰 어떠세요??'
@@ -654,3 +644,4 @@ class Movie(Resource):  # 책과 비슷한 영화 추천
             log.error_log(e)
 
         return responseBody
+
