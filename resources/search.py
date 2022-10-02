@@ -12,7 +12,8 @@ import os
 
 class Searching:
     def __init__(self):
-        self.key = os.environ.get('ALADIN_KEY', 'q1111')
+        # self.key = os.environ.get('ALADIN_KEY', 'q1111')
+        self.key = os.environ.get('ALADIN_KEY', 'ttbjeongiun0114001')
 
     def json_to_dict(self, url, informs):
         cnt = 0
