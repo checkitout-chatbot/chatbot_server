@@ -690,7 +690,7 @@ class Music(Resource):  # 책과 비슷한 음악 추천
             for similar_music in similar_musics:
                 similar_music = similar_music.json()
                 musics.append(MusicModel.find_by_id(
-                    similar_musics['music_id']).json())
+                    similar_music['music_id']).json())
             
             # print(musics)
 
