@@ -702,18 +702,6 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                 except:
                     pass
 
-            # concat_book_id = book['id']+6526
-
-            # sim_scores = list(enumerate(cosine_similarities[concat_book_id]))
-            # sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-
-            # # 가장 유사한 값 10개의 인덱스
-            # book_indices = [i[0] for i in sim_scores if i[0] <6526]
-            # book_indices = book_indices[1:11]
-
-            # # 전체 데이터프레임에서 해당 인덱스의 행만 추출. 10개의 행을 가진다.
-            # recommend = music_for_concat.iloc[book_indices].reset_index(drop=True)
-            # recommend
 
             # 유사도 id값들로 책 찾아 리스트로 저장
             musics = []
