@@ -12,7 +12,7 @@ import os
 
 class Searching:
     def __init__(self):
-        self.key = os.environ.get('ALADIN_KEY', 'q1111')
+        self.key = os.environ.get('ALADIN_KEY', 'ttbjeongiun0114001')
 
     def json_to_dict(self, url, informs):
         cnt = 0
@@ -41,6 +41,7 @@ class Searching:
 
     def search_keywords(self, query, num=10):
         url = f"http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey={self.key}&Query={query}&QueryType=Keyword&MaxResults={num}&start=1&SearchTarget=Book&output=js&Version=20131101"
+        # print(url)
         informs = {}
         informs = Searching.json_to_dict(self, url, informs)
         if len(informs) == 0:

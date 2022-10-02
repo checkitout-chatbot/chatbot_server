@@ -688,7 +688,8 @@ class Music(Resource):  # 책과 비슷한 음악 추천
             search = Searching()
             input_books = search.search_keywords(input_title, 30)
             # 여기서 출력값 비어 있음
-            print(input_books)
+            # print(input_title)
+            # print(input_books)
 
             # 해당 책이 나올 때까지 검색
             similar_musics = []
@@ -701,16 +702,18 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                     break
                 except:
                     pass
+            print(similar_musics)
 
 
             # 유사도 id값들로 책 찾아 리스트로 저장
             musics = []
             for similar_music in similar_musics:
                 similar_music = similar_music.json()
+                print(similar_music)
                 musics.append(MusicModel.find_by_id(
-                    similar_musics['music_id']).json())
+                    similar_music['music_id']).json())
             
-            # print(musics)
+            print(musics)
 
             items = []
             for i, music in enumerate(musics):
