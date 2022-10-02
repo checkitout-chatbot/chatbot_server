@@ -699,7 +699,7 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                 item1 = deepcopy(item)
                 item1['imageTitle']['title'] = music['title']
                 # item1['imageTitle']['imageUrl'] = music['img']
-                item1['imageTitle']['imageUrl'] = "https://cdnimg.melon.co.kr/cm2/album/images/110/63/665/11063665_20220926110109_500.jpg"
+                item1['imageTitle']['imageUrl'] = "https://img.freepik.com/free-vector/elegant-musical-notes-music-chord-background_1017-20759.jpg?w=2000"
 
                 itemLists = []
                 itemList1 = deepcopy(itemList)
@@ -712,24 +712,22 @@ class Music(Resource):  # 책과 비슷한 음악 추천
                 itemList2['description'] = music['genre']
                 itemLists.append(itemList2)
 
-                # itemList3 = deepcopy(itemList)
-                # itemList3['title'] = '가사'
-                # itemList3['description'] = music['lyric']
-                # itemLists.append(itemList3)
-                # item1['itemList'] = itemLists
+                item1['itemList'] = itemLists
+               
 
                 buttons = []
                 button1 = deepcopy(button)
                 button1['action'] = 'webLink'
-                button1['label'] = '책 정보'
+                button1['label'] = '음악 정보'
                 # f"https://www.melon.com/song/detail.htm?songId={music['melon_music_code']}" 
                 melon_url = f"https://www.melon.com/song/detail.htm?songId={music['melon_music_code']}"
                 button1['webLinkUrl'] = melon_url
                 buttons.append(button1)
+                item1['buttons'] = buttons
 
                 items.append(item1)
 
-                if i == 5:
+                if i == 10:
                     break
 
             carousel_itemCard['carousel']['items'] = items
